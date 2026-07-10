@@ -1,12 +1,20 @@
-<p align="center">
-  <img src="web/public/logo.svg" width="96" alt="infinite-canvas logo">
-</p>
+<div align="center">
+<pre>
+██╗███╗   ██╗███████╗██╗███╗   ██╗██╗
+██║████╗  ██║██╔════╝██║████╗  ██║██║
+██║██╔██╗ ██║█████╗  ██║██╔██╗ ██║██║
+██║██║╚██╗██║██╔══╝  ██║██║╚██╗██║██║
+██║██║ ╚████║██║     ██║██║ ╚████║██║
+╚═╝╚═╝  ╚═══╝╚═╝     ╚═╝╚═╝  ╚═══╝╚═╝
+</pre>
 
-<h1 align="center">无限画布 (infinite-canvas)</h1>
+**面向 AI 创作的开源无限画布工作台**
 
-<p align="center">
-  <a href="README.md">English</a> · <a href="README.es.md">Español</a>
-</p>
+*画布编排 · AI 生成 · 多 Agent 协同*
+
+🇨🇳 **中文**  ·  🇬🇧 [English](README.md)  ·  🇪🇸 [Español](README.es.md)
+
+</div>
 
 <p align="center">
   <a href="https://linux.do/"><img src="https://img.shields.io/badge/Linux.do-Community-2b6de8?style=flat-square" alt="Linux.do"></a>

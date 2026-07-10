@@ -1,12 +1,20 @@
-<p align="center">
-  <img src="web/public/logo.svg" width="96" alt="Logo de Infinite Canvas">
-</p>
+<div align="center">
+<pre>
+██╗███╗   ██╗███████╗██╗███╗   ██╗██╗
+██║████╗  ██║██╔════╝██║████╗  ██║██║
+██║██╔██╗ ██║█████╗  ██║██╔██╗ ██║██║
+██║██║╚██╗██║██╔══╝  ██║██║╚██╗██║██║
+██║██║ ╚████║██║     ██║██║ ╚████║██║
+╚═╝╚═╝  ╚═══╝╚═╝     ╚═╝╚═╝  ╚═══╝╚═╝
+</pre>
 
-<h1 align="center">Infinite Canvas</h1>
+**banco de trabajo open-source para creación de imágenes con IA**
 
-<p align="center">
-  <a href="README.md">English</a> · <a href="README.zh.md">中文</a>
-</p>
+*Orquestación de lienzo · Generación AI · Colaboración multi-agente*
+
+🇪🇸 **Español**  ·  🇬🇧 [English](README.md)  ·  🇨🇳 [中文](README.zh.md)
+
+</div>
 
 <p align="center">
   <a href="https://linux.do/"><img src="https://img.shields.io/badge/Linux.do-Community-2b6de8?style=flat-square" alt="Linux.do"></a>
