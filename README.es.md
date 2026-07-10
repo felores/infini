@@ -110,12 +110,4 @@ Si tienes tu propio despliegue, reemplaza `https://canvas.best` con tu direcció
 
 Licenciado bajo GNU Affero General Public License v3.0 — ver [LICENSE](LICENSE).
 
-## Historial de Estrellas
 
-<a href="https://www.star-history.com/?repos=basketikun%2Finfinite-canvas&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=basketikun/infinite-canvas&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=basketikun/infinite-canvas&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=basketikun/infinite-canvas&type=date&legend=top-left" />
- </picture>
-</a>
