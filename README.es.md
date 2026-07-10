@@ -106,31 +106,6 @@ Si tienes tu propio despliegue, reemplaza `https://canvas.best` con tu direcció
   </tr>
 </table>
 
-## Contacto
-
-Consultas sobre desarrollo personalizado / API de generación de imágenes:
-
-Email: 1844025705@qq.com · QQ: 1844025705
-
-## Patrocinio
-
-<div align="center">
-
-Si este proyecto te es útil, considera patrocinar a través de AiFaDian. ¡Cada aporte mantiene las actualizaciones en marcha!
-
-<br>
-
-<a href="https://ifdian.net/a/basketikun">
-  <img src="https://img.shields.io/badge/AiFaDian-Sponsor-946ce6?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik0xMiAyMS4zNWwtMS40NS0xLjMyQzUuNCAxNS4zNiAyIDEyLjI4IDIgOC41IDIgNS40MiA0LjQyIDMgNy41IDNjMS43NCAwIDMuNDEuODEgNC41IDIuMDlDMTMuMDkgMy44MSAxNC43NiAzIDE2LjUgMyAxOS41OCAzIDIyIDUuNDIgMjIgOC41YzAgMy43OC0zLjQgNi44Ni04LjU1IDExLjU0TDEyIDIxLjM1eiIvPjwvc3ZnPg==&logoColor=white" alt="AiFaDian Sponsor" />
-</a>
-
-<br>
-<br>
-
-</div>
-
-Únete al grupo QQ [AI Open Source Exchange](https://qm.qq.com/q/DFnKzZ807u)
-
 ## Licencia
 
 Licenciado bajo GNU Affero General Public License v3.0 — ver [LICENSE](LICENSE).
