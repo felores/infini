@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { App, Button, Input, Segmented, Tooltip } from "antd";
 import copyToClipboard from "copy-to-clipboard";
 import { Copy, FolderOpen, History, KeyRound, Link2, LoaderCircle, PlugZap, Plus, RefreshCw, RotateCcw, Square, Terminal, Trash2 } from "lucide-react";
@@ -10,6 +10,7 @@ import { useUserStore } from "@/stores/use-user-store";
 import { useAgentStore, type AgentAttachment, type AgentChatItem, type AgentEventLog, type AgentPanelTab, type AgentPendingToolCall, type AgentThreadSummary } from "@/stores/use-agent-store";
 import { summarizeCanvasAgentOps, type CanvasAgentOp, type CanvasAgentSnapshot } from "@/lib/canvas/canvas-agent-ops";
 import { isSiteTool, runSiteTool, SITE_TOOL_LABELS } from "@/lib/agent/agent-site-tools";
+import { normalizeLoopbackUrl } from "@/lib/agent/agent-url-guard";
 import { AgentChatComposer, AgentChatMessage, AgentPanelTabs, AgentPendingToolCard, AgentWorkingMessage, type CanvasAgentChatAttachment } from "./canvas-agent-chat-ui";
 
 const MAX_ATTACHMENTS = 6;
@@ -17,7 +18,7 @@ const MAX_ATTACHMENT_PAYLOAD_BYTES = 28 * 1024 * 1024;
 const DEFAULT_AGENT_URL = "http://127.0.0.1:17371";
 const AGENT_CONNECT_STEPS = [
     { title: "方式一：在 Codex 中使用插件", text: "在 Codex app 安装 Infinite Canvas 插件后，通过插件启动画布，插件会自动启动本地 Agent 并带上连接信息。" },
-    { title: "方式二：直接运行 Agent", text: "不使用 Codex 插件时，在终端运行下面命令，再回到网页里连接或手动填入 Local URL 和 Connect token。", command: "npx -y @basketikun/canvas-agent" },
+    { title: "方式二：运行当前源码", text: "不使用 Codex 插件时，在仓库根目录运行下面命令，再回到网页里连接或手动填入 Local URL 和 Connect token。", command: "bun --cwd canvas-agent src/index.ts" },
 ];
 const AGENT_PLUGIN_REMOVE_COMMAND = "codex plugin remove infinite-canvas";
 const AGENT_MCP_REMOVE_COMMAND = "codex mcp remove infinite-canvas";
@@ -43,7 +44,6 @@ export function CanvasLocalAgentPanel({ embedded, headless, autoConnect }: { emb
     const theme = canvasThemes[useThemeStore((state) => state.theme)];
     const user = useUserStore((state) => state.user);
     const { message, modal } = App.useApp();
-    const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const { width, url, token, connected, enabled, prompt, attachments, sending, waiting, messages, eventLogs, threads, activeThreadId, workspacePath, loadingThreads, activeTab, confirmTools, activity, connectError, pendingTool, canvasContext, setAgentState, addMessage: pushMessage, addEventLog: pushEventLog, clearEventLogs } = useAgentStore();
     const listRef = useRef<HTMLDivElement>(null);
@@ -51,12 +51,12 @@ export function CanvasLocalAgentPanel({ embedded, headless, autoConnect }: { emb
     const confirmToolsRef = useRef(confirmTools);
     const pendingToolRef = useRef<AgentPendingToolCall | null>(null);
     const autoConnectRef = useRef(false);
+    const fragmentHandledRef = useRef(false);
     const connectedRef = useRef(false);
     const errorLoggedRef = useRef(false);
     const attachmentUrlsRef = useRef(new Set<string>());
     const clientIdRef = useRef(typeof crypto === "undefined" ? `${Date.now()}` : crypto.randomUUID());
     const endpoint = useMemo(() => url.trim().replace(/\/$/, ""), [url]);
-    const urlAgentAutoConnect = searchParams.has("agentUrl") && searchParams.has("agentToken");
     const loadThreads = useCallback(async () => {
         if (!connectedRef.current && !useAgentStore.getState().connected) return;
         setAgentState({ loadingThreads: true });
@@ -173,7 +173,7 @@ export function CanvasLocalAgentPanel({ embedded, headless, autoConnect }: { emb
         addMessage({ role: "user", text: text || "发送了图片", attachments: files });
         addEventLog("用户发送", { text, attachments: files.map(({ name, type, size }) => ({ name, type, size })) });
         try {
-            const res = await fetch(`${endpoint}/agent/codex/turn?token=${encodeURIComponent(token)}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ prompt: requestPrompt, threadId: useAgentStore.getState().activeThreadId || undefined, attachments: files.map(({ name, type, dataUrl }) => ({ name, type, dataUrl })) }) });
+            const res = await fetch(`${endpoint}/agent/codex/turn`, { method: "POST", headers: { "content-type": "application/json", "x-canvas-agent-token": token }, body: JSON.stringify({ prompt: requestPrompt, threadId: useAgentStore.getState().activeThreadId || undefined, attachments: files.map(({ name, type, dataUrl }) => ({ name, type, dataUrl })) }) });
             if (!res.ok) throw new Error("本地 Agent 拒绝了请求");
             const data = (await res.json()) as { threadId?: string };
             if (data.threadId) setAgentState({ activeThreadId: data.threadId });
@@ -196,7 +196,7 @@ export function CanvasLocalAgentPanel({ embedded, headless, autoConnect }: { emb
         if (!connected || (!sending && !waiting)) return;
         setAgentState({ activity: "停止中" });
         try {
-            await fetch(`${endpoint}/agent/codex/interrupt?token=${encodeURIComponent(token)}`, { method: "POST", headers: { "content-type": "application/json" } });
+            await fetch(`${endpoint}/agent/codex/interrupt`, { method: "POST", headers: { "content-type": "application/json", "x-canvas-agent-token": token } });
             setAgentState({ activity: "已停止", sending: false, waiting: false });
             addEventLog("用户停止", {});
         } catch {
@@ -332,11 +332,9 @@ export function CanvasLocalAgentPanel({ embedded, headless, autoConnect }: { emb
             clearAgentSession({ enabled: false, connected: false, activity: "离线", connectError: "" });
             return;
         }
-        const urlToken = searchParams.get("agentToken") || "";
-        const urlEndpoint = searchParams.get("agentUrl") || "";
-        const discovered = urlToken ? null : await discoverAgentConfig(endpoint || DEFAULT_AGENT_URL);
-        const nextEndpoint = (urlEndpoint || discovered?.url || endpoint || DEFAULT_AGENT_URL).trim().replace(/\/$/, "");
-        const nextToken = (urlToken || token.trim() || discovered?.token || "").trim();
+        const discovered = token.trim() ? null : await discoverAgentConfig(endpoint || DEFAULT_AGENT_URL);
+        const nextEndpoint = (discovered?.url || endpoint || DEFAULT_AGENT_URL).trim().replace(/\/$/, "");
+        const nextToken = (token.trim() || discovered?.token || "").trim();
         if (!nextEndpoint) {
             const text = "请填写本地 Agent 地址";
             setAgentState({ connectError: text });
@@ -349,22 +347,38 @@ export function CanvasLocalAgentPanel({ embedded, headless, autoConnect }: { emb
             if (!headless) message.warning(text);
             return;
         }
-        try {
-            const parsed = new URL(nextEndpoint);
-            if (parsed.protocol !== "http:" && parsed.protocol !== "https:") throw new Error("invalid protocol");
-        } catch {
-            const text = "本地 Agent 地址格式不正确";
+        const normalized = normalizeLoopbackUrl(nextEndpoint);
+        if (!normalized) {
+            const text = "仅支持本地回环地址 (localhost / 127.0.0.1 / ::1)";
             setAgentState({ connectError: text });
             if (!headless) message.warning(text);
             return;
         }
         errorLoggedRef.current = false;
-        setAgentState({ url: nextEndpoint, token: nextToken, enabled: true, connected: false, activity: "连接中", connectError: "", activeTab: "setup" });
+        setAgentState({ url: normalized, token: nextToken, enabled: true, connected: false, activity: "连接中", connectError: "", activeTab: "setup" });
     };
 
     useEffect(() => {
-        if (urlAgentAutoConnect && confirmTools) setAgentState({ confirmTools: false });
-    }, [confirmTools, setAgentState, urlAgentAutoConnect]);
+        if (fragmentHandledRef.current) return;
+        const hash = window.location.hash;
+        if (!hash) return;
+        const fragParams = new URLSearchParams(hash.startsWith("#") ? hash.slice(1) : hash);
+        const fragUrl = fragParams.get("agentUrl");
+        const fragToken = fragParams.get("agentToken");
+        if (!fragUrl || !fragToken) return;
+        fragmentHandledRef.current = true;
+        fragParams.delete("agentUrl");
+        fragParams.delete("agentToken");
+        const remaining = fragParams.toString();
+        window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}${remaining ? `#${remaining}` : ""}`);
+        const normalized = normalizeLoopbackUrl(fragUrl);
+        if (!normalized) {
+            setAgentState({ connectError: "仅支持本地回环地址 (localhost / 127.0.0.1 / ::1)" });
+            return;
+        }
+        errorLoggedRef.current = false;
+        setAgentState({ url: normalized, token: fragToken, enabled: true, connected: false, activity: "连接中", connectError: "", activeTab: "setup" });
+    }, [setAgentState]);
 
     useEffect(() => {
         if (!autoConnect || autoConnectRef.current || enabled || connected) return;
@@ -661,7 +675,7 @@ function AgentConnectView({ theme, url, token, enabled, connected, activity, con
 
                 <div className="rounded-lg border px-3 py-2.5 text-xs leading-5" style={{ borderColor: theme.node.stroke, color: theme.node.muted }}>
                     <div className="font-medium" style={{ color: theme.node.text }}>Codex 插件提醒</div>
-                    <div className="mt-1">只有安装 Codex 插件或手动添加 MCP 后，工具列表才会进入 Codex 上下文并增加 token 消耗；仅运行 `npx -y @basketikun/canvas-agent` 启动本地 Agent 不会安装 MCP。</div>
+                    <div className="mt-1">只有安装 Codex 插件或手动添加 MCP 后，工具列表才会进入 Codex 上下文并增加 token 消耗；仅运行当前源码启动本地 Agent 不会安装 MCP。</div>
                     <div className="mt-2 grid gap-1.5">
                         {[
                             ["移除插件", AGENT_PLUGIN_REMOVE_COMMAND],
@@ -785,12 +799,12 @@ function AgentHistoryView({ theme, threads, activeThreadId, workspacePath, loadi
 
 async function postState(endpoint: string, token: string, clientId: string, snapshot: CanvasAgentSnapshot | null) {
     try {
-        await fetch(`${endpoint}/canvas/state?token=${encodeURIComponent(token)}&clientId=${encodeURIComponent(clientId)}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(snapshot ? { ...snapshot, hasCanvas: true } : { hasCanvas: false }) });
+        await fetch(`${endpoint}/canvas/state?clientId=${encodeURIComponent(clientId)}`, { method: "POST", headers: { "content-type": "application/json", "x-canvas-agent-token": token }, body: JSON.stringify(snapshot ? { ...snapshot, hasCanvas: true } : { hasCanvas: false }) });
     } catch {}
 }
 
 async function postToolResult(endpoint: string, token: string, clientId: string, body: { requestId: string; result?: unknown; error?: string }) {
-    await fetch(`${endpoint}/canvas/result?token=${encodeURIComponent(token)}&clientId=${encodeURIComponent(clientId)}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+    await fetch(`${endpoint}/canvas/result?clientId=${encodeURIComponent(clientId)}`, { method: "POST", headers: { "content-type": "application/json", "x-canvas-agent-token": token }, body: JSON.stringify(body) });
 }
 
 function agentMessageToChatMessage(item: AgentChatItem) {
@@ -1008,8 +1022,9 @@ function formatBytes(bytes: number) {
 }
 
 async function fetchAgentJson<T>(endpoint: string, token: string, path: string, init?: RequestInit) {
-    const url = `${endpoint}${path}${path.includes("?") ? "&" : "?"}token=${encodeURIComponent(token)}`;
-    const res = await fetch(url, init);
+    const headers = new Headers(init?.headers);
+    headers.set("x-canvas-agent-token", token);
+    const res = await fetch(`${endpoint}${path}`, { ...init, headers });
     const data = (await res.json().catch(() => ({}))) as T & { error?: string; msg?: string };
     if (!res.ok) throw new Error(data.error || data.msg || "本地 Agent 请求失败");
     return data;

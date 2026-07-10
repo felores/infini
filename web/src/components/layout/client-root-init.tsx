@@ -24,6 +24,7 @@ export function ClientRootInit({ children }: { children: ReactNode }) {
         searchParams.delete("apikey");
         window.history.replaceState(null, "", `${window.location.pathname}${searchParams.size ? `?${searchParams}` : ""}${window.location.hash}`);
         const firstChannel = config.channels[0];
+        const clearKey = Boolean(baseUrl && !apiKey);
         updateConfig(
             "channels",
             firstChannel
@@ -33,12 +34,14 @@ export function ClientRootInit({ children }: { children: ReactNode }) {
                                 ...channel,
                                 ...(baseUrl ? { baseUrl } : {}),
                                 ...(apiKey ? { apiKey } : {}),
+                                ...(clearKey ? { apiKey: "" } : {}),
                             }
                           : channel,
                   )
                 : [createModelChannel({ id: "default", name: "默认渠道", baseUrl: baseUrl || undefined, apiKey: apiKey || "" })],
         );
         if (baseUrl) updateConfig("baseUrl", baseUrl);
+        if (clearKey) updateConfig("apiKey", "");
         if (apiKey) updateConfig("apiKey", apiKey);
         openConfigDialog(false);
         message.success("已导入本地直连配置");

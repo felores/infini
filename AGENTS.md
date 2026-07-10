@@ -1,82 +1,188 @@
 # AGENTS.md
 
-本文档用于约束本项目中的 AI / 自动化开发行为。开发时优先遵循本文件，其次遵循用户当前消息。
+Local repository: `/Users/felo/Documents/GitHub/infini`
+Remote repository: `https://github.com/felores/infini`
+Upstream repository: `https://github.com/basketikun/infinite-canvas`
 
-## 基本原则
+These instructions govern AI and automated development in this repository. Follow this file first, then the user's current request.
 
-- 先读现有代码，再动手修改，优先沿用项目已有结构和写法。
-- 写代码保持最少行数，能简单实现就不要引入复杂抽象。
-- 标准格式、协议、解析、压缩、加密、日期等通用能力优先使用成熟稳定的库，不要手写底层实现，除非用户明确要求或项目已有实现必须沿用。
-- 不要为了“兼容更多场景”写大量分支，只实现当前明确需要的功能。
-- 项目尚未上线，不需要兼容旧数据；本地存储结构调整时直接按新设计修改，不写旧字段兼容或数据迁移兜底，除非用户明确要求。
-- 每次写完代码，不需要检查语法，不需要执行构建，用户会自己做。
-- 不要改无关文件，不要顺手重构。
-- 如果工作区已有用户改动，不要回滚，不要覆盖；只在必要范围内追加修改。
+## Core Principles
 
-## 反复提醒沉淀
+- Read the existing code before editing and follow the project's current structure and patterns.
+- Keep code changes minimal. Do not introduce complex abstractions when a direct implementation works.
+- Prefer mature libraries for standard formats, protocols, parsing, compression, encryption, dates, and similar general-purpose capabilities. Do not reimplement them unless explicitly requested or required by existing project code.
+- Do not add branches for speculative compatibility. Implement only the currently defined requirement.
+- This project is not yet released. Local persistence formats may change directly without backward-compatible fields or migrations unless explicitly requested.
+- Harness policy: after code changes, run the narrowest relevant automated checks. Do not run full production builds unless the user explicitly asks.
+- Do not modify unrelated files or perform opportunistic refactors.
+- Preserve existing user changes in the worktree. Do not revert or overwrite them; add only the changes required for the task.
 
-- 如果开发过程中总是遇到某个问题，或者用户反复提醒同一个注意事项，需要把该注意事项补充到本文件。
-- 补充时写成明确、可执行的规则，避免只写模糊描述。
-- 新规则应放到最相关的章节；找不到合适章节时放到“项目注意事项”。
+## Recurring Feedback
 
-## 前端规范
+- Add recurring problems or repeated user reminders to this file as durable guidance.
+- Write new guidance as explicit, executable rules rather than vague advice.
+- Place new rules in the most relevant section; use Project Notes only when no better section exists.
 
-- 前端使用 Vite、React、React Router、TypeScript、Ant Design、Tailwind、Zustand。
-- 编写 Ant Design 相关代码时，参考 https://ant.design/llms-full.txt 理解组件 API、示例和设计规范，并优先结合项目当前 antd 版本与既有写法。
-- 外部服务请求统一放在 `web/src/services/api/`，由浏览器前端直连，不假设存在项目后端。
-- 全局或跨页面状态优先放在 `web/src/stores/`。
-- 已经放在全局 store 或全局 hook 中的状态/动作，组件需要时直接使用对应 store/hook，不要为了“纯组件”层层透传 props；避免一个组件传递过多参数。
-- 全局组件、全局常量、全局配置等全局性质的内容不要作为 props 或参数层层传递；哪里需要就在哪里直接从对应全局入口获取。
-- 多个页面重复出现的 UI 副作用动作，例如复制文本并提示、下载并提示、统一确认弹窗，优先抽成 `web/src/hooks/` 下的全局 hook；不要放进 store，除非它确实是需要共享/订阅的状态。
-- 路由页面放在 `web/src/pages/`，页面布局放在 `web/src/layouts/`，路由配置放在 `web/src/router.tsx`。
-- 画布页面放在 `web/src/pages/canvas/`，画布组件放在 `web/src/components/canvas/`，画布状态放在 `web/src/stores/canvas/`，画布工具函数放在 `web/src/lib/canvas/`。
-- 页面按目录组织，例如 `web/src/pages/image/index.tsx`；页面里只有一个主业务组件时直接写在对应页面入口中，不要单独拆 `Manager` 组件再传一堆 props。
-- 不要新增只做简单转发的组件，例如只 `return <X>{children}</X>` 或只换个名字透传 props；直接在使用处使用真实组件或把逻辑写进当前文件。
-- 页面私有 hook 放在对应页面目录下，例如 `admin/assets/use-admin-assets.ts`；只有多个页面真实复用的 hook 才放到外层 `hooks/`。
-- 管理后台页面私有组件放到各自页面目录的 `components/` 下，例如 `admin/assets/components/`、`admin/prompts/components/`；不要为了单页面使用放到 `admin/components/` 共享目录。
-- 管理后台主题、背景、卡片阴影、表格配色等统一在 `web/src/lib/app-theme.ts`、`AppProviders` 或必要的全局 CSS 作用域中配置；页面私有组件不要自己写 `dark ? ...` 主题分支。
-- 组件优先使用函数组件和现有 hooks，不新增大型状态管理方案。
-- UI 图标优先使用 `lucide-react` 或项目已经使用的 Ant Design 图标。
-- 页面文案保持中文。
-- 不要在组件里堆太多无关逻辑；复杂逻辑优先抽成同目录工具函数或小组件。
-- 样式优先由组件自己管理；组件私有样式优先使用 Tailwind className 或少量内联 style，不要为单个组件新增大量全局 CSS。
-- 全局 CSS 只放基础变量、全局重置、跨页面通用样式和少量第三方组件必要覆盖；不要在 `globals.css` 堆页面私有样式。
-- 代码尽量短小直接，少拆不必要组件，少做多层 props 传递，避免为了抽象堆出更多代码。
-- 前端业务数据需要浏览器本地持久化时，默认使用 `localforage`；`localStorage` 只用于极小的简单配置，不要用来保存业务列表、生成记录、图片、base64 或大 JSON。
+## Frontend Conventions
 
-## 画布 UI 规范
+- The frontend uses Vite, React, React Router, TypeScript, Ant Design, Tailwind, and Zustand.
+- For Ant Design work, consult https://ant.design/llms-full.txt for component APIs, examples, and design guidance, then follow the installed antd version and existing project patterns.
+- Put external service requests in `web/src/services/api/`. The browser calls these services directly; do not assume a project backend exists.
+- Put global or cross-page state in `web/src/stores/`.
+- Components should consume existing global stores and hooks directly. Do not thread global state or actions through multiple prop layers merely to keep components pure, and avoid excessive prop counts.
+- Global components, constants, and configuration should be imported from their canonical global entry points instead of passed through props or function arguments.
+- Repeated UI side effects such as copying or downloading with notifications and shared confirmation dialogs belong in reusable hooks under `web/src/hooks/`. Do not put them in stores unless they are genuinely shared, subscribable state.
+- Route pages belong in `web/src/pages/`, layouts in `web/src/layouts/`, and route configuration in `web/src/router.tsx`.
+- Canvas pages belong in `web/src/pages/canvas/`, canvas components in `web/src/components/canvas/`, canvas state in `web/src/stores/canvas/`, and canvas utilities in `web/src/lib/canvas/`.
+- Organize pages by directory, for example `web/src/pages/image/index.tsx`. When a page has one primary business component, keep it in the page entry instead of adding a separate Manager component with many props.
+- Do not add components that only forward children or rename and pass through props. Use the underlying component directly or keep the logic in the current file.
+- Page-private hooks belong in their page directory, for example `admin/assets/use-admin-assets.ts`. Move hooks to the shared `hooks/` directory only after multiple pages actually reuse them.
+- Admin page-private components belong under each page's `components/` directory, for example `admin/assets/components/` or `admin/prompts/components/`. Do not put single-page components in `admin/components/`.
+- Configure admin themes, backgrounds, card shadows, and table colors centrally in `web/src/lib/app-theme.ts`, `AppProviders`, or a necessary global CSS scope. Page-private components should not implement their own `dark ? ...` theme branches.
+- Prefer function components and existing hooks. Do not add another large state-management system.
+- Prefer `lucide-react` or the Ant Design icons already used by the project.
+- Keep user-facing page copy in Chinese.
+- Do not accumulate unrelated logic in components. Move genuinely complex logic into a same-directory utility or small component.
+- Let components own their styles. Prefer Tailwind classes or small inline styles for private styling; do not add large global CSS blocks for one component.
+- Reserve global CSS for foundational variables, resets, cross-page styles, and necessary third-party overrides. Do not accumulate page-private styles in `globals.css`.
+- Keep code short and direct. Avoid unnecessary component splitting, deep prop chains, and abstraction that adds more code than it removes.
+- Use `localforage` for browser-persisted business data. Reserve `localStorage` for tiny configuration values; do not store business lists, generation history, images, base64 data, or large JSON in it.
 
-- 做 canvas 前端 UI 时必须遵循当前画布主题。
-- 优先使用 `canvasThemes`、`useThemeStore` 或 Ant Design `ConfigProvider` token。
-- 不要硬编码黑白、stone、slate 等颜色导致浅色/深色主题不一致。
-- 新增画布按钮、弹窗、浮层时，尽量复用已有工具栏、节点面板、Modal 的视觉风格。
-- 画布顶部工具栏和状态信息优先采用极简扁平风格：无边框、无阴影、无胶囊背景，融入整体背景，弱化按钮感，仅保留轻微 hover 反馈，保持简洁现代、低视觉重量。
-- 图片节点尺寸逻辑要尊重原始比例，除非功能明确要求自由变形。
-- 批量生成、多图展示、助手面板等画布交互要尽量简洁，不要占用过多画布空间。
+## Canvas UI Conventions
 
-## 文档规范
+- Canvas UI work must follow the current canvas theme.
+- Prefer `canvasThemes`, `useThemeStore`, or Ant Design `ConfigProvider` tokens.
+- Do not hardcode black, white, stone, slate, or similar colors in ways that break light and dark themes.
+- Reuse the existing toolbar, node panel, and Modal visual language for new canvas buttons, dialogs, and overlays.
+- Keep top canvas controls and status information minimal and flat: no borders, shadows, or pill backgrounds; blend them into the canvas, keep visual weight low, and use only subtle hover feedback.
+- Preserve image aspect ratios unless the feature explicitly requires freeform distortion.
+- Keep batch generation, multi-image displays, and assistant panels compact so they do not consume unnecessary canvas space.
 
-- README 保持简洁，只放项目介绍、核心功能、快速开始和文档入口。
-- `docs/index.md` 放给 AI 使用的文档索引，不要再放到 `docs/content/docs/` 内容目录里。
-- 详细功能介绍写到 `docs/content/docs/overview/features.mdx`。
-- 后续待办写到 `docs/content/docs/progress/todo.mdx`。
-- 已实现但还需要用户测试确认的事项写到 `docs/content/docs/progress/pending-test.mdx`。
-- `docs/content/docs/progress/pending-test.mdx` 用来记录这个版本实际做了哪些可测试变更；`CHANGELOG.md` 的 `Unreleased` 只保留对这些变更的版本级归纳，避免逐条照搬实现细节。
-- 每次重大改动（新增/调整/删除功能、接口或工具，影响用户可感知行为）完成后，都要在 `CHANGELOG.md` 的 `Unreleased` 追加一条记录，按 `[新增]` / `[调整]` / `[修复]` / `[优化]` 前缀分类，用一句中文归纳；纯内部重构、格式化、无用户可感知影响的小改动可不记。
-- 每次 todo 事项完成后，先从 `docs/content/docs/progress/todo.mdx` 移到 `docs/content/docs/progress/pending-test.mdx`，不要直接写进正式功能说明；用户确认测试通过后再更新 `docs/content/docs/overview/features.mdx`。
-- 每次任务完成前，都要根据实际变更检查并更新 `docs/content/docs/progress/todo.mdx` 和 `docs/content/docs/progress/pending-test.mdx`；如果功能或待办没有变化，也要确认无需修改。
-- 文档不要写过期日期；除非用户明确要求记录具体时间。
+## Documentation Conventions
 
-## 发版本流程
+- Keep README concise: project overview, core features, quick start, and documentation links only.
+- Keep the AI-facing documentation index at `docs/index.md`, not under `docs/content/docs/`.
+- Put detailed feature documentation in `docs/content/docs/overview/features.mdx`.
+- Put future work in `docs/content/docs/progress/todo.mdx`.
+- Put implemented changes that still require user validation in `docs/content/docs/progress/pending-test.mdx`.
+- Use `docs/content/docs/progress/pending-test.mdx` for the concrete, testable changes in the current version. Keep `CHANGELOG.md` Unreleased entries as version-level summaries rather than duplicating implementation details.
+- After a major user-visible feature, interface, or tool change, add one Chinese summary line under `CHANGELOG.md` Unreleased with the appropriate literal prefix: `[新增]`, `[调整]`, `[修复]`, or `[优化]`. Internal refactors, formatting, and invisible changes do not need entries.
+- When a todo is implemented, move it from `docs/content/docs/progress/todo.mdx` to `docs/content/docs/progress/pending-test.mdx`. Update `docs/content/docs/overview/features.mdx` only after the user confirms testing passed.
+- Before completing a task, check whether `docs/content/docs/progress/todo.mdx` and `docs/content/docs/progress/pending-test.mdx` need updates. Confirm no update is needed when functionality and planned work are unchanged.
+- Do not add expiration dates to documentation unless the user explicitly requests a specific date.
 
-- 发版本时，先把 `CHANGELOG.md` 的 `Unreleased` 变更整理成新的版本记录，并保留空的 `Unreleased` 标题。
-- 按当前版本号提升一个版本，更新根目录 `VERSION`。
-- 将当前未提交的代码全部提交到 Git。
-- 提交完成后，给当前提交打最新版本号对应的 tag，例如 `v0.0.5`。
-- 发版本流程中不要执行编译、测试或构建，除非用户明确要求。
+## Release Workflow
 
-## 项目注意事项
+- Move the current `CHANGELOG.md` Unreleased entries into a new version section and leave an empty Unreleased heading.
+- Increment the current version and update the root `VERSION` file.
+- Commit all current uncommitted code.
+- Tag that commit with the corresponding version, for example `v0.0.5`.
+- Do not compile, test, or build during the release workflow unless the user explicitly asks.
 
-- 当前画布项目和“我的素材”主要保存在浏览器本地，不要在文档中误写成已支持云同步。
-- 当前 AI API Key 存在浏览器本地，并由前端直接请求 OpenAI 兼容接口；涉及安全说明时要写清楚。
-- Docker 静态资源路径目前仍是待办项，文档中不要过度承诺生产部署已经完全验证。
+## Project Notes
+
+- Canvas projects and My Assets are stored primarily in the browser. Do not claim that cloud synchronization is supported.
+- The AI API key is stored in the browser and used for direct frontend requests to OpenAI-compatible endpoints. State this clearly in security documentation.
+- Docker static asset paths remain unverified work. Do not overstate production deployment readiness.
+
+## What Infinite Canvas Is
+
+Infinite Canvas is an open-source workbench for image creation. It unifies infinite-canvas orchestration, AI image generation, reference-image editing, a conversation assistant, a prompt library, and material accumulation in one browser interface. Product branding is "Infinite Canvas"; the fork is `felores/infini`, based on `basketikun/infinite-canvas`.
+
+## Strategic Context
+
+- **Why**: let a single person explore visual directions and iterate image results continuously without juggling separate tools.
+- **Target user**: individual creators doing AI image generation and visual exploration; local/personal deployment, not multi-tenant public use.
+- **Functional success**: user can create canvas projects, arrange nodes, generate/edit images via their own OpenAI-compatible API, converse with an assistant around selected nodes, and persist everything locally.
+- **No quantitative metric** is tracked.
+- **Anti-scope**: no server-side database, no user accounts/auth, no cloud sync of canvas/materials, no backward-compatible data migration (pre-launch; formats may change).
+- **Constraints**: the AI API key lives in the browser; the local Canvas Agent is optional and loopback-only.
+
+## Tech Stack
+
+- **web/**: Vite 7, React 19, React Router 7, TypeScript 5, Ant Design 6, Tailwind 4, Zustand, localforage, Bun (package manager).
+- **canvas-agent/**: Node + Express 5, TypeScript, `@modelcontextprotocol/sdk`, `@openai/codex`; runs as a local loopback HTTP/MCP server.
+- **docs/**: Next.js + Fumadocs MDX.
+- **Root**: Docker, Render (`render.yaml`), Vercel config, Nginx.
+
+## Infrastructure
+
+- No server database and no authentication. The web app is a static SPA; canvas projects, materials, generation history, and the AI API key persist in the browser (localforage / IndexedDB).
+- The browser frontend calls OpenAI-compatible endpoints directly using a user-supplied key held in-browser.
+- The optional local Canvas Agent binds to `127.0.0.1` only and is token-gated; it is not part of the deployed static site.
+- Deployment: static build of `web/` (Vite) served via Docker/Nginx, Render, or Vercel.
+
+## Database Schema
+
+Browser persistence only. Canvas projects, image/media blobs, prompt caches, and generation records are stored via localforage (IndexedDB). Small config values use `localStorage`. There is no server-side schema; local storage formats may change between versions without migration.
+
+## API Routes
+
+The web app has no server routes. The optional local Canvas Agent (`canvas-agent/src/http-server.ts`) exposes loopback-only HTTP routes:
+
+- **Health/config**: `GET /health`, `GET /config`
+- **Events**: `GET /events` (SSE)
+- **Canvas sync**: `POST /canvas/state`, `POST /canvas/result`
+- **Tools**: `POST /api/tools`
+- **Codex agent**: `GET /agent/codex/workspace`, `GET /agent/codex/threads`, `POST /agent/codex/threads/new`, `GET /agent/codex/threads/:threadId`, `POST /agent/codex/threads/:threadId/resume`, `POST /agent/codex/threads/:threadId/delete`, `POST /agent/codex/turn`, `POST /agent/codex/interrupt`
+- **Claude agent**: `POST /agent/claude/turn`
+
+All routes except `/health` and `/config` require a valid `x-canvas-agent-token` header.
+
+## File Organization
+
+- `web/` - Vite SPA (the product).
+  - `src/pages/` route pages; `src/pages/canvas/` canvas pages.
+  - `src/components/canvas/` canvas components.
+  - `src/stores/` global state (Zustand); `src/stores/canvas/` canvas state.
+  - `src/lib/canvas/` canvas utilities; `src/lib/agent/` agent URL guards.
+  - `src/services/api/` external service calls (browser-direct).
+  - `tests/` Vitest unit tests; `tests/e2e/` Playwright E2E.
+- `canvas-agent/` - local loopback agent (Express + MCP).
+- `docs/` - Fumadocs documentation site.
+- `plugins/infinite-canvas/` - Codex app plugin + MCP skill.
+- `.harness/` - harness bootstrap (`init.sh`).
+- `docs/brainstorms`, `docs/plans`, `docs/designs`, `docs/solutions` - planning artifacts.
+
+## Key Architecture Decisions
+
+- **Browser-first persistence**: no server DB keeps the deploy a static SPA; trade-off is no cross-device sync.
+- **API key in browser**: user owns their key; trade-off is the key is exposed to the browser context (documented in SECURITY.md).
+- **Loopback-only agent**: the local Canvas Agent binds `127.0.0.1` and uses a token to prevent remote abuse.
+- **No backward-compatible migration**: pre-launch, local storage formats change freely.
+- **Bun as web package manager**: faster installs; the stale `package-lock.json` was removed to avoid drift.
+
+## Development Commands
+
+Three independent packages; run commands inside each package directory.
+
+- **web/** (Bun): `bun install`, `bun run dev` (dev server on :3000), `bun run build`, `bun run typecheck`, `bun run test` (Vitest), `bun run test:run`, `bun run test:e2e` (Playwright).
+- **canvas-agent/** (Bun): `bun install`, `bun run dev` (tsx), `bun run build` (tsc), `bun run start`.
+- **docs/** (Bun): `bun install`, `bun run dev` (Next.js), `bun run build`.
+
+## Testing Strategy
+
+- **Vitest** (node environment) for pure TypeScript logic under `tests/**/*.test.ts` (excludes `tests/e2e/**`).
+- **Playwright E2E** for rendered UI under `tests/e2e/**` (Chromium only, dev server on `127.0.0.1:3000`).
+- No jsdom component runner by default; `.tsx` component tests are opt-in (add `@testing-library/react` only when needed).
+- **Browser diagnostics** (`console.error`, `pageerror`, `requestfailed`, HTTP >=500) are captured in every E2E test and fail the run unless explicitly allowlisted. This is release-blocking.
+
+## Development Harness
+
+| Skill | Trigger |
+|-------|---------|
+| `harness-init` | new/unconfigured repo; "bootstrap", "audit the project" |
+| `harness-preview` | before any UI feature; "design this", "mockup" |
+| `harness-progress` | spec or plan exists; "what's next", "track features" |
+| `harness-verify` | after implementing a feature; "verify everything", "check my work" |
+
+**Release-blocking rule**: every E2E run must assert browser diagnostics; unallowlisted `console.error` / `pageerror` / `requestfailed` / HTTP >=500 entries fail the release.
+
+## Domain Glossary
+
+- **Canvas project**: a single infinite canvas with its nodes, edges, and metadata, persisted in IndexedDB.
+- **Node**: a draggable element on the canvas (image, text, etc.).
+- **Canvas Agent**: the optional local loopback HTTP/MCP server that lets Codex/Claude operate the current canvas.
+- **Loopback URL**: a URL whose host is `127.0.0.1`, `localhost`, or `[::1]`; only loopback URLs are accepted by the agent URL guard.
+- **OpenAI-compatible endpoint**: a Base URL + API Key the user configures for image/text generation; the browser calls it directly.
+- **Material**: accumulated image/media assets saved in the browser.

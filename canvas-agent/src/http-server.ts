@@ -104,7 +104,7 @@ export function startHttpServer() {
         console.log(`Local URL: ${config.url}`);
         console.log(`Connect token: ${config.token}`);
         console.log("Codex MCP is not installed by this command.");
-        console.log("Optional MCP add: codex mcp add infinite-canvas -- npx -y @basketikun/canvas-agent mcp");
+        console.log("Optional MCP add: codex mcp add infinite-canvas -- npx -y @basketikun/canvas-agent@0.1.0 mcp");
         console.log("Remove manually added MCP: codex mcp remove infinite-canvas");
     });
 }
@@ -139,5 +139,6 @@ function setCors(req: Request, res: Response, url: URL, config: CanvasAgentConfi
 
 function validToken(req: Request, url: URL, token: string) {
     const header = req.headers["x-canvas-agent-token"];
-    return url.searchParams.get("token") === token || header === token || (Array.isArray(header) && header.includes(token));
+    if (header === token || (Array.isArray(header) && header.includes(token))) return true;
+    return url.pathname === "/events" && url.searchParams.get("token") === token;
 }

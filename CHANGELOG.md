@@ -2,6 +2,8 @@
 
 ## Unreleased
 
++ [修复] 加固 API Key 导入、本地 Agent 认证、进程启动与配置文件权限，避免凭据泄露和 Windows shell 注入。
++ [优化] Canvas Agent 与发布 workflows 固定依赖和 Action 版本，并使用冻结 lockfile 构建发布。
 + [优化] 本地 Agent 连接说明明确区分插件 / 手动 MCP 才会增加 Codex token 消耗，直接运行 Agent 不受影响。
 + [优化] 优化本地 Agent 连接说明，区分 Codex 插件启动和直接运行 Agent 两种方式。
 + [新增] Agent 对话消息改用 streamdown 流式渲染，提升长回复与 Markdown 内容展示效果。

@@ -5,7 +5,12 @@ description: 当前版本已实现但仍需人工验证的变更项
 
 # 待测试
 
-- 本地 Agent 连接说明：新增提醒说明只有安装 Codex 插件或手动添加 MCP 后才会增加 Codex token 消耗，直接运行 `npx -y @basketikun/canvas-agent` 不会安装 MCP；需验证文案位置清晰。
+- 本地 Agent 安全加固：API Base URL 从链接导入时若未同时提供新 Key，会清除旧 Key；需验证旧 Key 不会发送到新地址。
+- 本地 Agent 安全加固：连接地址仅允许 `localhost`、`127.0.0.1` 和 `::1`，启动凭据改放 URL fragment 并在读取后立即清除，普通请求改用 token header；需验证自动连接、工具确认和历史记录正常。
+- 本地 Agent 安全加固：Windows 启动 Claude 不再经过 shell，本地配置目录和 token 文件分别收紧为 `0700` / `0600`；需在对应平台验证。
+- Canvas Agent 发布：源码包版本提升为 `0.1.1`，发布 workflow 改用冻结 Bun lockfile、显式构建和禁用 publish scripts；需由上游 npm 所有者发布后再把插件 MCP pin 从 `0.1.0` 更新到 `0.1.1`。
+- 供应链加固：插件 MCP 固定使用已审计的 `@basketikun/canvas-agent@0.1.0`，GitHub Actions 固定到完整 commit SHA；需验证插件和发布 workflows 正常。
+- 本地 Agent 连接说明：新增提醒说明只有安装 Codex 插件或手动添加 MCP 后才会增加 Codex token 消耗，直接运行当前仓库源码不会安装 MCP；需验证文案位置清晰。
 - 本地 Agent 连接说明：画布面板和配置页 Codex Tab 改为区分“Codex 插件启动画布”和“直接运行 Agent 后网页连接”两种方式，需验证文案和布局清晰。
 - 全站 Agent：Agent 面板从画布页抽离为全站常驻面板，挂在全局布局右侧，开/关只挤压左侧内容不遮挡；顶栏和画布工具条各有一个开关按钮，需验证在首页、生图、视频、素材、提示词库、画布等页面都能打开面板并保持 SSE 连接不断开。
 - 全站 Agent：新增 `site_navigate` 工具，Agent 可直接跳转 `/`、`/canvas`、`/canvas/:id`、`/image`、`/video`、`/prompts`、`/assets`、`/config`；导航直接执行不走工具确认，需验证跳转正确且面板不消失。

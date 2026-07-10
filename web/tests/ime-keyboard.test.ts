@@ -1,4 +1,4 @@
-import assert from "node:assert/strict";
+import { describe, expect, it } from "vitest";
 
 import { isImeComposing, isPlainEnterKey } from "../src/lib/keyboard-event";
 
@@ -14,18 +14,44 @@ function enterEvent(overrides: Partial<KeyboardEventLike> = {}): KeyboardEventLi
     };
 }
 
-assert.equal(isPlainEnterKey(enterEvent()), true, "plain Enter submits");
-assert.equal(isPlainEnterKey(enterEvent({ shiftKey: true })), false, "Shift+Enter does not submit");
-assert.equal(isPlainEnterKey(enterEvent({ ctrlKey: true })), false, "Ctrl+Enter does not submit");
-assert.equal(isPlainEnterKey(enterEvent({ metaKey: true })), false, "Meta+Enter does not submit");
-assert.equal(isPlainEnterKey(enterEvent({ nativeEvent: { isComposing: true } })), false, "IME composition Enter does not submit");
-assert.equal(isPlainEnterKey(enterEvent({ nativeEvent: { keyCode: 229 } })), false, "legacy IME Enter does not submit");
-assert.equal(isPlainEnterKey(enterEvent({ key: "a" })), false, "non-Enter keys do not submit");
+describe("isPlainEnterKey", () => {
+    it("submits on plain Enter", () => {
+        expect(isPlainEnterKey(enterEvent())).toBe(true);
+    });
+    it("does not submit on Shift+Enter", () => {
+        expect(isPlainEnterKey(enterEvent({ shiftKey: true }))).toBe(false);
+    });
+    it("does not submit on Ctrl+Enter", () => {
+        expect(isPlainEnterKey(enterEvent({ ctrlKey: true }))).toBe(false);
+    });
+    it("does not submit on Meta+Enter", () => {
+        expect(isPlainEnterKey(enterEvent({ metaKey: true }))).toBe(false);
+    });
+    it("does not submit on IME composition Enter", () => {
+        expect(isPlainEnterKey(enterEvent({ nativeEvent: { isComposing: true } }))).toBe(false);
+    });
+    it("does not submit on legacy IME Enter", () => {
+        expect(isPlainEnterKey(enterEvent({ nativeEvent: { keyCode: 229 } }))).toBe(false);
+    });
+    it("does not submit on non-Enter keys", () => {
+        expect(isPlainEnterKey(enterEvent({ key: "a" }))).toBe(false);
+    });
+});
 
-assert.equal(isImeComposing(enterEvent({ isComposing: true })), true, "direct composition flag is detected");
-assert.equal(isImeComposing(enterEvent({ nativeEvent: { isComposing: true } })), true, "native composition flag is detected");
-assert.equal(isImeComposing(enterEvent({ keyCode: 229 })), true, "direct legacy keyCode composition is detected");
-assert.equal(isImeComposing(enterEvent({ nativeEvent: { keyCode: 229 } })), true, "native legacy keyCode composition is detected");
-assert.equal(isImeComposing(enterEvent()), false, "plain Enter is not composition");
-
-console.log("ime keyboard tests passed");
+describe("isImeComposing", () => {
+    it("detects direct composition flag", () => {
+        expect(isImeComposing(enterEvent({ isComposing: true }))).toBe(true);
+    });
+    it("detects native composition flag", () => {
+        expect(isImeComposing(enterEvent({ nativeEvent: { isComposing: true } }))).toBe(true);
+    });
+    it("detects direct legacy keyCode composition", () => {
+        expect(isImeComposing(enterEvent({ keyCode: 229 }))).toBe(true);
+    });
+    it("detects native legacy keyCode composition", () => {
+        expect(isImeComposing(enterEvent({ nativeEvent: { keyCode: 229 } }))).toBe(true);
+    });
+    it("returns false for plain Enter", () => {
+        expect(isImeComposing(enterEvent())).toBe(false);
+    });
+});

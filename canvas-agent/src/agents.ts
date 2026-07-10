@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
+import crossSpawn from "cross-spawn";
 
 import { AGENT_PROMPT, VERSION } from "./config.js";
 import type { AgentAttachment, AgentEmit } from "./types.js";
@@ -491,7 +492,7 @@ function codexBin() {
     return path.join(path.dirname(require.resolve("@openai/codex/package.json")), "bin", "codex.js");
 }
 
-function pipeJsonLines(child: ReturnType<typeof spawn>, emit: AgentEmit, agent: string) {
+function pipeJsonLines(child: ChildProcess, emit: AgentEmit, agent: string) {
     let out = "";
     child.stdout?.on("data", (chunk) => {
         out += chunk.toString();
@@ -512,7 +513,7 @@ function pipeJsonLines(child: ReturnType<typeof spawn>, emit: AgentEmit, agent: 
 
 function spawnAgent(name: string, args: string[], stdio: StdioOptions, emit: AgentEmit) {
     try {
-        return spawn(name, args, { stdio, shell: process.platform === "win32", windowsHide: true });
+        return crossSpawn(name, args, { stdio, windowsHide: true });
     } catch (error) {
         emit("agent_error", { message: errorMessage(error) });
         return null;

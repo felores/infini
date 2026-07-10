@@ -426,7 +426,8 @@ function InfiniteCanvasPage() {
 
     useEffect(() => {
         if (!projectLoaded || !["new", "recent", "choose"].includes(searchParams.get("mode") || "")) return;
-        if (!searchParams.has("agentUrl")) openAgentPanel();
+        const fragParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+        if (!fragParams.has("agentUrl")) openAgentPanel();
     }, [openAgentPanel, projectLoaded, searchParams]);
 
     useEffect(() => {

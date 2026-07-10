@@ -53,6 +53,20 @@ Examples that are usually out of scope:
 - Social engineering, phishing, spam, or account recovery requests.
 - Dependency reports without a practical impact on this project.
 
+## Local Agent Safety
+
+The Canvas Agent listens on the loopback interface and accepts browser
+connections only from `localhost`, `127.0.0.1`, or `::1`. Treat its connect
+token as a local secret: launch links keep it in the URL fragment, normal HTTP
+requests send it in the `x-canvas-agent-token` header, and only the EventSource
+connection retains query authentication because browser EventSource cannot set
+custom headers.
+
+Repository development should run `bun --cwd canvas-agent src/index.ts` so the
+current hardened source is used. Plugin MCP startup is pinned to the audited
+`@basketikun/canvas-agent@0.1.0` package until the upstream npm owner publishes
+the hardened `0.1.1` release.
+
 ## Disclosure
 
 The maintainers aim to acknowledge valid reports within 7 days and coordinate a
@@ -61,4 +75,3 @@ this community project.
 
 Please allow time for investigation and remediation before publishing details.
 Credit will be given on request unless you prefer to remain anonymous.
-

@@ -1,5 +1,6 @@
 import { create } from "zustand";
 
+import { normalizeLoopbackUrl } from "@/lib/agent/agent-url-guard";
 import type { CanvasAgentOp, CanvasAgentSnapshot } from "@/lib/canvas/canvas-agent-ops";
 
 export type AgentChatRole = "user" | "assistant" | "system" | "tool" | "error";
@@ -91,19 +92,13 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
     togglePanel: () => (get().panelOpen ? get().closePanel() : get().openPanel()),
     setCanvasContext: (canvasContext) => set({ canvasContext }),
     connectAgent: () => {
-        const endpoint = get().url.trim().replace(/\/$/, "");
+        const normalized = normalizeLoopbackUrl(get().url);
         const token = get().token.trim();
-        if (!endpoint || !token) return set({ connectError: "请填写 Local URL 和 Connect token" });
-        try {
-            const parsed = new URL(endpoint);
-            if (!["http:", "https:"].includes(parsed.protocol)) throw new Error();
-        } catch {
-            return set({ connectError: "Local URL 格式不正确" });
-        }
-        localStorage.setItem("canvas-agent-url", endpoint);
+        if (!normalized || !token) return set({ connectError: "请填写 Local URL 和 Connect token" });
+        localStorage.setItem("canvas-agent-url", normalized);
         localStorage.setItem("canvas-agent-token", token);
         // 只设 enabled=true，由 CanvasLocalAgentPanel 的 useEffect 统一负责开 SSE
-        set({ url: endpoint, token, enabled: true, activity: "连接中", connectError: "" });
+        set({ url: normalized, token, enabled: true, activity: "连接中", connectError: "" });
     },
     disconnectAgent: (patch = {}) => {
         agentSource?.close();

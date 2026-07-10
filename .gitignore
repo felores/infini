@@ -9,3 +9,11 @@ data/
 .DS_Store
 .idea
 web/dist
+.playwright-cli/
+test-results/
+playwright-report/
+.stitch/
+.harness/progress.md
+.harness/patterns.md
+.harness/dev.pid
+.planning/phases/*/RESEARCH.md
