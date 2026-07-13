@@ -2,143 +2,149 @@
 
 ## Unreleased
 
-+ [修复] 加固 API Key 导入、本地 Agent 认证、进程启动与配置文件权限，避免凭据泄露和 Windows shell 注入。
-+ [优化] Canvas Agent 与发布 workflows 固定依赖和 Action 版本，并使用冻结 lockfile 构建发布。
-+ [优化] 本地 Agent 连接说明明确区分插件 / 手动 MCP 才会增加 Codex token 消耗，直接运行 Agent 不受影响。
-+ [优化] 优化本地 Agent 连接说明，区分 Codex 插件启动和直接运行 Agent 两种方式。
-+ [新增] Agent 对话消息改用 streamdown 流式渲染，提升长回复与 Markdown 内容展示效果。
-+ [新增] Agent 新增画布、工作台、提示词库和素材等站点级工具，支持读取配置、触发生成与新增素材。
-+ [新增] Agent 面板改为全站常驻右侧栏，开关时同步推动顶栏和页面内容，并保留独立入口按钮。
-+ [新增] Agent 新增 `site_navigate` 工具，支持从对话中直接跳转首页、画布、工作台、素材和配置等页面。
-+ [新增] Agent 对话运行中支持一键停止，发送按钮切换为红色停止按钮并中断当前 Codex turn。
-+ [调整] Codex 会话改为站点级连续线程，不再按画布 ID 分隔，跨页面和跨画布保持同一上下文。
-+ [调整] 移除仅前端调用 OpenAI responses 接口的在线画布助手旧逻辑，统一走 MCP + 本地 Codex 链路。
-+ [新增] 画布节点支持统一维护名称字段，默认显示在节点上方，并可直接双击名称编辑。
-+ [新增] 画布新增组节点，支持节点拖入/拆出分组、拖拽高亮吸附和移动组时带动子节点。
-+ [调整] 画布节点顶部工具条改为点击选中节点后显示，避免鼠标经过节点时频繁弹出。
++ [Fixed] Prevent empty prompt covers and duplicate prompt tags from producing React rendering warnings.
++ [Fixed] Shape image API response fields by model family so GPT Image requests do not send unsupported `response_format`.
++ [Fixed] Encode multiple image-edit references with multipart `image[]` fields while preserving single-image compatibility.
++ [Fixed] Remove perpetual chat message animation and the rapidly changing working indicator that caused visible flicker.
++ [Fixed] Fix source-mode Canvas Agent missing platform Codex dependency and outdated version causing chat request failures; pass through server and subprocess diagnostics.
++ [Optimized] Local dev harness adds Canvas Agent dependency pre-check, private service logs, and browser 500 response body diagnostics.
++ [Fixed] Harden API Key import, local Agent authentication, process startup, and config file permissions to prevent credential leakage and Windows shell injection.
++ [Optimized] Pin Canvas Agent and release workflow dependencies and Action versions; use frozen lockfile for release builds.
++ [Optimized] Clarify local Agent connection instructions: only plugin or manual MCP setup increases Codex token consumption; running the Agent directly is unaffected.
++ [Optimized] Improve local Agent connection instructions to distinguish between Codex plugin launch and direct Agent execution.
++ [Added] Agent chat messages now use streamdown streaming rendering for better long-reply and Markdown content display.
++ [Added] Agent adds site-level tools for canvas, workbench, prompt library, and assets, supporting reading config, triggering generation, and adding assets.
++ [Added] Agent panel becomes a site-wide persistent right sidebar; toggling pushes the top nav and page content with an independent entry button.
++ [Added] Agent adds `site_navigate` tool to jump directly to home, canvas, workbench, assets, and config pages from a conversation.
++ [Added] Agent conversations support one-click stop; the send button turns into a red stop button and interrupts the current Codex turn.
++ [Changed] Codex sessions are now site-level continuous threads, no longer separated by canvas ID; cross-page and cross-canvas share the same context.
++ [Changed] Remove old online canvas assistant logic that called OpenAI responses API from the frontend; unify on MCP + local Codex pipeline.
++ [Added] Canvas nodes support a unified name field displayed above the node; double-click the name to edit directly.
++ [Added] Canvas adds group nodes with drag-in/drag-out grouping, drag-highlight snapping, and child-node movement when moving a group.
++ [Changed] Canvas node top toolbar now shows on click-select instead of hover to avoid frequent pop-ups when moving the mouse over nodes.
 
 ## v0.6.0 - 2026-07-09
 
-+ [新增] 新增Codex App插件支持。
-+ [新增] 配置与用户偏好新增独立页面和 Codex 连接配置 Tab。
-+ [新增] 新增GitHub Pages 前端静态站点发布 workflow。
-+ [新增] 图片切图支持等分线直接拖拽调整，并可新增、删除和重置横向 / 纵向切图线。
-+ [调整] Docker 运行镜像改为 nginx 静态托管。
-+ [调整] 移除网站Agent模式，专注于连接Codex Agent操作画布
-+ [修复] 修复生图工作台重试成功结果刷新后丢失的问题。
-+ [修复] 修复 Gemini 调用格式生图未传递尺寸比例配置的问题。
-+ [修复] 修复前端 TypeScript 构建报错。
-+ [修复] 修复画布生成配置切换文本/视频/音频模式时模型仍显示为生图模型的问题。
-+ [修复] 兼容中转站视频任务直接返回视频 URL 且没有 `/content` 接口的情况，并优化失败原因展示。
++ [Added] Add Codex App plugin support.
++ [Added] Add a standalone page for configuration and user preferences with a Codex connection config tab.
++ [Added] Add GitHub Pages frontend static site publish workflow.
++ [Added] Image split supports dragging equal-division lines to adjust, with add, delete, and reset for horizontal/vertical split lines.
++ [Changed] Docker runtime image switched to nginx static hosting.
++ [Changed] Remove website Agent mode, focus on connecting Codex Agent to operate the canvas.
++ [Fixed] Fix image workbench retry success result lost after refresh.
++ [Fixed] Fix Gemini format image generation not passing size ratio config.
++ [Fixed] Fix frontend TypeScript build errors.
++ [Fixed] Fix canvas generation config showing image model when switching to text/video/audio mode.
++ [Fixed] Compat with relay station video tasks returning video URL directly without `/content` endpoint; improve failure reason display.
 
 ## v0.5.0 - 2026-07-05
 
-+ [新增] 渠道兼容Gemini格式。
-+ [调整] 前端从 Next.js 迁移到 Vite，项目改为静态前端构建。
-+ [调整] 移除已 404 的 EvoLinkAI 提示词来源。
++ [Added] Channel supports Gemini format.
++ [Changed] Migrate frontend from Next.js to Vite; project becomes a static frontend build.
++ [Changed] Remove 404 EvoLinkAI prompt source.
 
 ## v0.4.0 - 2026-06-16
 
-+ [新增] 新增网页版Agent Loop模式。
-+ [新增] 支持Vercel一键部署。
-+ [调整] 移除后端，项目定位为个人画布工具。
++ [Added] Add web Agent Loop mode.
++ [Added] Support Vercel one-click deploy.
++ [Changed] Remove backend; project repositioned as a personal canvas tool.
 
 ## v0.3.0 - 2026-06-15
 
-+ [新增] 新增canvas-agent通过codex操作画布。
++ [Added] Add canvas-agent to operate canvas via codex.
 
 ## v0.2.5 - 2026-06-08
 
-+ [新增] 新增图片切图功能。
-+ [新增] 支持webdav同步数据。
-+ [修复] 修复画布文字节点错误问题。
++ [Added] Add image split feature.
++ [Added] Support webdav data sync.
++ [Fixed] Fix canvas text node error.
 
 ## v0.2.4 - 2026-06-04
 
-+ [新增] 新增图片反推提示词功能。
++ [Added] Add image-to-prompt feature.
 
 ## v0.2.3 - 2026-06-04
 
-+ [新增] 新增图片蒙版局部修改功能。
-+ [优化] 优化配置节点@图片功能。
++ [Added] Add image mask local edit feature.
++ [Optimized] Optimize config node @image feature.
 
 ## v0.2.2 - 2026-06-04
 
-+ [新增] 新增图片放大工具。
-+ [优化] 优化图片工具条，增加自定义功能。
-+ [修复] 修复端口冲突问题、pg/mysql未初始化问题。
++ [Added] Add image upscale tool.
++ [Optimized] Optimize image toolbar with custom features.
++ [Fixed] Fix port conflict and pg/mysql uninitialized issues.
 
 ## v0.2.1 - 2026-06-03
 
-+ [新增] 新增文档站点页面。
-+ [优化] 优化画布连线交互。
-+ [优化] 优化模型选择用户偏好。
++ [Added] Add documentation site pages.
++ [Optimized] Optimize canvas connection interaction.
++ [Optimized] Optimize model selection user preferences.
 
 ## v0.2.0 - 2026-06-01
 
-+ [新增] 支持通过火山方舟AgentPlan接入。
-+ [新增] 视频生成支持声音、水印及图片/视频/音频参考输入。
-+ [新增] 画布新增音频节点。
-+ [优化] 图片/视频素材支持 `图片1`编号注入提示词。
++ [Added] Support connection via Volcano Ark AgentPlan.
++ [Added] Video generation supports audio, watermark, and image/video/audio reference inputs.
++ [Added] Canvas adds audio node.
++ [Optimized] Image/video assets support numbered prompt injection like `Image1`.
 
 ## v0.1.1 - 2026-05-30
 
-+ [新增] 支持New API跳转并自动填入Base URL和API Key配置。
++ [Added] Support New API redirect with auto-fill of Base URL and API Key config.
 
 ## v0.1.0 - 2026-05-26
 
-+ [优化] 优化我的画布、我的素材导出功能
-+ [修复] 修复画布撤销，配置节点等bug问题
++ [Optimized] Optimize My Canvas and My Assets export features.
++ [Fixed] Fix canvas undo and config node bugs.
 
 ## v0.0.9 - 2026-05-26
 
-+ [新增] 新增视频创作台页面。
-+ [修复] 修复图片节点size参数传递问题。
++ [Added] Add video workbench page.
++ [Fixed] Fix image node size parameter passing.
 
 ## v0.0.8 - 2026-05-24
 
-+ [新增] 新增用户账号与算力点体系，支持账号密码注册登录、Linux.do OAuth。
-+ [新增] 管理后台公开配置支持设置模型算力点、支持计费查询。
-+ [新增] 画布右上角展示用户算力点余额，生成按钮会展示本次预计消耗算力点。
-+ [新增] 新增视频生成节点。
++ [Added] Add user account and compute-point system with username/password registration and Linux.do OAuth.
++ [Added] Admin backend public config supports model compute-point settings and billing queries.
++ [Added] Canvas top-right shows user compute-point balance; generate button shows estimated consumption.
++ [Added] Add video generation node.
 
 ## v0.0.7 - 2026-05-23
 
-+ [新增] 管理后台提示词管理支持多选批量删除。
-+ [新增] 新增定义拉取GitHub提示词源功能。
-+ [新增] 新增awesome-gpt-image2-prompts提示词来源。
-+ [优化] 优化模型下拉选择样式、优化生图编辑设置
++ [Added] Admin prompt management supports multi-select batch delete.
++ [Added] Add feature to pull GitHub prompt sources.
++ [Added] Add awesome-gpt-image2-prompts prompt source.
++ [Optimized] Optimize model dropdown style and image edit settings.
 
 ## v0.0.6 - 2026-05-22
 
-+ [新增] 管理后台支持配置模型渠道，前端当前无需鉴权即可直接使用后端渠道能力。
-+ [优化] 统一整理后端错误提示、AI 代理、图片节点生成与重试、参考图缺失处理等细节。
-+ [优化] 后端模型代理路径调整为 OpenAI 风格。
++ [Added] Admin backend supports configuring model channels; frontend uses backend channel capabilities without authentication.
++ [Optimized] Unify backend error messages, AI proxy, image node generation and retry, missing reference image handling.
++ [Optimized] Backend model proxy path adjusted to OpenAI style.
 
 ## v0.0.5 - 2026-05-20
 
-+ [新增] 右上角版本号支持点击查看版本更新弹窗，展示当前版本、最新版本和按时间线整理的更新日志。
-+ [新增] 设置弹窗支持配置系统提示词，AI 生图、编辑图和文本请求会自动携带。
++ [Added] Top-right version number clickable to show version update modal with current/latest version and timeline-organized changelog.
++ [Added] Settings modal supports configuring system prompt auto-attached to AI image generation, edit, and text requests.
 
 ## v0.0.4 - 2026-05-20
 
-+ [调整] Docker 运行入口改为 Next.js 对外提供页面，`/api/*` 由 Next.js 代理到内部 Go 服务。
-+ [修复] 文本复制在局域网 IP 访问时可能失败的问题。
++ [Changed] Docker runtime entry switched to Next.js serving pages; `/api/*` proxied by Next.js to internal Go service.
++ [Fixed] Fix text copy failure on LAN IP access.
 
 ## v0.0.3 - 2026-05-19
 
-+ [修复] 更新 nanoid 依赖并修改 ID 生成方式，防止其他ip无法使用crypto模块导致的ID生成失败问题。
++ [Fixed] Update nanoid dependency and change ID generation to prevent failures from crypto module unavailability on other IPs.
 
 ## v0.0.2 - 2026-05-19
 
-+ [新增] 增加生图工作台功能，支持文生图、图生图、查看历史记录，并增加移动端适配。
-+ [修复] 画布生成尺寸控件支持选择更多常用比例，并可直接输入自定义比例。
-+ [修复] 生成配置节点恢复拖拽操作，避免面板控件拦截整块节点拖动。
-+ [文档] 增加 Render 部署说明。
++ [Added] Add image generation workbench with text-to-image, image-to-image, history viewing, and mobile adaptation.
++ [Fixed] Canvas generation size control supports more common ratios and custom ratio input.
++ [Fixed] Restore drag on config nodes to prevent panel controls from blocking node dragging.
++ [Added] Add Render deployment instructions.
 
 ## v0.0.1 - 2026-05-19
 
-+ [新增] 首次开源版本，包含无限画布能力：多画布项目、节点拖拽缩放、连线、小地图、撤销重做、导入导出。
-+ [新增] AI 创作能力：支持 OpenAI 兼容接口的文生图、图生图、参考图编辑和文本问答。
-+ [新增] 画布助手能力：支持围绕选中节点和上游节点对话、生图，并把结果插回画布。
-+ [新增] 提示词库能力：抓取多个 GitHub 开源项目，按案例整理数百个图片提示词。
++ [Added] Initial open-source release with infinite canvas: multi-canvas projects, node drag/zoom, connections, minimap, undo/redo, import/export.
++ [Added] AI creation: text-to-image, image-to-image, reference image editing, and text Q&A via OpenAI-compatible API.
++ [Added] Canvas assistant: converse around selected and upstream nodes, generate images, and insert results back to canvas.
++ [Added] Prompt library: scrape multiple GitHub open-source projects, organize hundreds of image prompts by case.

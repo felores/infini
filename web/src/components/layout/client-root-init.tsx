@@ -38,13 +38,13 @@ export function ClientRootInit({ children }: { children: ReactNode }) {
                             }
                           : channel,
                   )
-                : [createModelChannel({ id: "default", name: "默认渠道", baseUrl: baseUrl || undefined, apiKey: apiKey || "" })],
+                : [createModelChannel({ id: "default", name: "Default Channel", baseUrl: baseUrl || undefined, apiKey: apiKey || "" })],
         );
         if (baseUrl) updateConfig("baseUrl", baseUrl);
         if (clearKey) updateConfig("apiKey", "");
         if (apiKey) updateConfig("apiKey", apiKey);
         openConfigDialog(false);
-        message.success("已导入本地直连配置");
+        message.success("Imported local direct-connect config");
     }, [config.channels, message, openConfigDialog, updateConfig]);
 
     return <>{children}</>;

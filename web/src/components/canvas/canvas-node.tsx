@@ -147,7 +147,7 @@ export const CanvasNode = React.memo(function CanvasNode({
     }, [isEditingTitle]);
 
     const finishTitleEditing = useCallback(() => {
-        const title = titleDraft.trim() || data.title || "未命名节点";
+        const title = titleDraft.trim() || data.title || "Untitled node";
         setTitleDraft(title);
         setIsEditingTitle(false);
         if (title !== data.title) onTitleChange(data.id, title);
@@ -317,13 +317,13 @@ export const CanvasNode = React.memo(function CanvasNode({
                         type="button"
                         className="block max-w-full truncate border-b border-dashed border-transparent px-0 py-0.5 text-left text-xs font-medium opacity-75 transition hover:border-current hover:opacity-100"
                         style={{ color: theme.node.text }}
-                        title="双击修改节点名称"
+                        title="Double-click to edit node name"
                         onDoubleClick={(event) => {
                             event.stopPropagation();
                             setIsEditingTitle(true);
                         }}
                     >
-                        {data.title || "未命名节点"}
+                        {data.title || "Untitled node"}
                     </button>
                 )}
             </div>
@@ -402,7 +402,7 @@ export const CanvasNode = React.memo(function CanvasNode({
             {!isGroup ? <ConnectionHandleDot side="left" visible={hovered || isSelected || isConnecting} onMouseDown={(event) => onConnectStart(event, data.id, "target")} /> : null}
             {!isGroup ? <ConnectionHandleDot side="right" visible={data.type !== CanvasNodeType.Config && (hovered || isSelected || isConnecting)} onMouseDown={(event) => onConnectStart(event, data.id, "source")} /> : null}
 
-            {showPanel && !isGroup && renderPanel ? <div className="absolute left-1/2 top-full z-[70] w-[500px] -translate-x-1/2 pt-4">{renderPanel(data)}</div> : null}
+            {showPanel && !isGroup && renderPanel ? <div className="absolute left-1/2 top-full z-[70] w-[450px] -translate-x-1/2 pt-4">{renderPanel(data)}</div> : null}
         </div>
     );
 });
@@ -433,9 +433,9 @@ function GroupNodeContent({ node, theme, groupChildCount }: NodeContentRendererP
                 <span className="grid size-8 place-items-center rounded-xl" style={{ background: theme.toolbar.activeBg, color: theme.node.muted }}>
                     <Group className="size-4" />
                 </span>
-                <span>组</span>
+                <span>Group</span>
                 <span className="ml-auto rounded-full px-2 py-1 text-[11px] font-medium" style={{ background: theme.node.fill, color: theme.node.muted }}>
-                    {groupChildCount} 个节点
+                    {groupChildCount} nodes
                 </span>
             </div>
             <div className="mt-3 flex-1 rounded-2xl border border-dashed" style={{ borderColor: theme.node.stroke, background: `${theme.node.fill}55` }} />
@@ -447,7 +447,7 @@ function LoadingContent({ theme }: Pick<NodeContentRendererProps, "theme">) {
     return (
         <div className="flex h-full w-full flex-col items-center justify-center gap-3" style={{ color: theme.node.activeStroke }}>
             <div className="size-10 animate-spin rounded-full border-2" style={{ borderColor: theme.node.stroke, borderTopColor: theme.node.activeStroke }} />
-            <span className="text-[10px] tracking-[0.2em]">生成中</span>
+            <span className="text-[10px] tracking-[0.2em]">Generating</span>
         </div>
     );
 }
@@ -455,7 +455,7 @@ function LoadingContent({ theme }: Pick<NodeContentRendererProps, "theme">) {
 function ErrorContent({ node, theme, onRetry }: Pick<NodeContentRendererProps, "node" | "theme" | "onRetry">) {
     return (
         <div className="flex max-w-[260px] flex-col items-center gap-3 px-5 text-center">
-            <div className="text-xs leading-5 text-red-300">{node.metadata?.errorDetails || "生成失败"}</div>
+            <div className="text-xs leading-5 text-red-300">{node.metadata?.errorDetails || "generation failed"}</div>
             <button
                 type="button"
                 className="inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-xs font-medium transition hover:scale-[1.02]"
@@ -467,7 +467,7 @@ function ErrorContent({ node, theme, onRetry }: Pick<NodeContentRendererProps, "
                 onMouseDown={(event) => event.stopPropagation()}
             >
                 <RefreshCw className="size-3.5" />
-                重试
+                Retry
             </button>
         </div>
     );
@@ -476,7 +476,7 @@ function ErrorContent({ node, theme, onRetry }: Pick<NodeContentRendererProps, "
 function UnknownNodeContent({ theme }: Pick<NodeContentRendererProps, "theme">) {
     return (
         <div className="flex h-full w-full items-center justify-center text-sm" style={{ color: theme.node.placeholder }}>
-            未知节点
+            Unknownnode
         </div>
     );
 }
@@ -497,11 +497,11 @@ function TextContent({ node, theme, isEditingContent, textareaRef, mentionRefere
                 }}
                 onMouseDown={(event) => event.stopPropagation()}
                 onPointerDown={(event) => event.stopPropagation()}
-                title="用文本生图"
-                aria-label="用文本生图"
+                title="Generate image from text"
+                aria-label="Generate image from text"
             >
                 <ImageIcon className="size-3.5" />
-                生图
+                image generation
             </button>
             {isEditingContent ? (
                 <CanvasResourceMentionTextarea
@@ -526,7 +526,7 @@ function TextContent({ node, theme, isEditingContent, textareaRef, mentionRefere
                     style={textStyle}
                     onWheel={(event) => event.stopPropagation()}
                 >
-                    {node.metadata?.content || <span style={{ color: theme.node.placeholder }}>双击编辑文字</span>}
+                    {node.metadata?.content || <span style={{ color: theme.node.placeholder }}>Double-click to edit text</span>}
                 </div>
             )}
         </div>
@@ -579,7 +579,7 @@ function EmptyImageContent({ theme, isBatchRoot, batchCount, batchExpanded, batc
             <div className="flex size-14 items-center justify-center rounded-2xl" style={{ background: theme.toolbar.activeBg }}>
                 <ImageIcon className="size-6 opacity-30" />
             </div>
-            <span className="text-[10px] tracking-[0.18em] opacity-50">空图片节点</span>
+            <span className="text-[10px] tracking-[0.18em] opacity-50">Empty image node</span>
         </div>
     );
     if (isBatchRoot)
@@ -596,7 +596,7 @@ function VideoNodeContent({ node, theme }: NodeContentRendererProps) {
         return (
             <div className="flex h-full w-full flex-col items-center justify-center gap-3" style={{ color: theme.node.placeholder }}>
                 <Video className="size-7 opacity-35" />
-                <span className="text-sm">空视频节点</span>
+                <span className="text-sm">Empty video node</span>
             </div>
         );
     return <video src={node.metadata.content} controls className="h-full w-full rounded-[18px] bg-black object-contain" data-canvas-no-zoom />;
@@ -607,14 +607,14 @@ function AudioNodeContent({ node, theme }: NodeContentRendererProps) {
         return (
             <div className="flex h-full w-full flex-col items-center justify-center gap-2" style={{ color: theme.node.placeholder }}>
                 <Music2 className="size-7 opacity-35" />
-                <span className="text-sm">空音频节点</span>
+                <span className="text-sm">Empty audio node</span>
             </div>
         );
     return (
         <div className="flex h-full w-full flex-col justify-center gap-3 px-4" style={{ background: theme.node.fill, color: theme.node.text }}>
             <div className="flex min-w-0 items-center gap-2 text-sm opacity-70">
                 <Music2 className="size-4 shrink-0" />
-                <span className="truncate">音频</span>
+                <span className="truncate">Audio</span>
             </div>
             <audio src={node.metadata.content} controls className="w-full" data-canvas-no-zoom />
         </div>
@@ -659,7 +659,7 @@ function ImageContent({
                     type="button"
                     className="absolute right-2.5 top-2.5 z-30 flex h-8 items-center justify-center gap-1 rounded-full border px-2.5 text-xs font-semibold shadow-[0_6px_18px_rgba(15,23,42,.10)] backdrop-blur-md transition hover:scale-[1.02]"
                     style={{ background: `${theme.toolbar.panel}d9`, borderColor: `${theme.toolbar.border}cc`, color: theme.node.text }}
-                    aria-label={batchExpanded ? "图片组已展开" : "图片组已收起"}
+                    aria-label={batchExpanded ? "Image batch expanded" : "Image batch collapsed"}
                     onClick={(event) => {
                         event.stopPropagation();
                         onToggleBatch?.();
@@ -684,7 +684,7 @@ function ImageContent({
                     onPointerDown={(event) => event.stopPropagation()}
                 >
                     <Star className="size-3.5 text-[#2f80ff]" />
-                    设为主图
+                    Set as main image
                 </button>
             ) : null}
         </BatchFrame>

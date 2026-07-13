@@ -58,15 +58,15 @@ export class CanvasSession {
     }
 
     async callTool(name: unknown, rawInput: unknown) {
-        if (!isToolName(name)) throw new Error(`未知工具：${String(name)}`);
+        if (!isToolName(name)) throw new Error(`Unknown tool: ${String(name)}`);
         let tool: ToolName = name;
         let input = parseToolInput(tool, rawInput) as Record<string, unknown>;
         if (SITE_TOOLS.has(tool)) {
-            if (!this.clients.size) throw new Error("当前没有已连接网页");
+            if (!this.clients.size) throw new Error("No connected web client");
             return await this.requestCanvasTool(tool, input);
         }
         const readTool = ["canvas_get_state", "canvas_get_selection", "canvas_export_snapshot"].includes(tool);
-        if (readTool && (!this.clients.size || !this.canvasState)) throw new Error("当前没有已连接画布");
+        if (readTool && (!this.clients.size || !this.canvasState)) throw new Error("No connected canvas");
         if (tool === "canvas_get_state" || tool === "canvas_export_snapshot") return compactCanvasState(this.canvasState);
         if (tool === "canvas_get_selection") {
             const ids = new Set(this.canvasState?.selectedNodeIds || []);
@@ -161,20 +161,20 @@ export class CanvasSession {
             input = { ops: [runGenerationOp(data.nodeId, generationMode(data.mode), data.prompt)] };
             tool = "canvas_apply_ops";
         }
-        if (tool !== "canvas_apply_ops") throw new Error(`未知工具：${tool}`);
-        if (!this.clients.size) throw new Error("当前没有已连接画布");
+        if (tool !== "canvas_apply_ops") throw new Error(`Unknown tool: ${tool}`);
+        if (!this.clients.size) throw new Error("No connected canvas");
         return await this.requestCanvasTool(tool, input);
     }
 
     private async requestCanvasTool(name: ToolName, input: Record<string, unknown>) {
         const requestId = crypto.randomUUID();
         const client = this.clients.get(this.canvasState?.clientId || "") || this.clients.values().next().value;
-        if (!client) throw new Error("当前没有已连接画布");
+        if (!client) throw new Error("No connected canvas");
         sendEvent(client, "tool_call", { requestId, name, input });
         return await new Promise((resolve, reject) => {
             const timer = setTimeout(() => {
                 this.pending.delete(requestId);
-                reject(new Error("画布操作超时"));
+                reject(new Error("Canvas operation timed out"));
             }, 30000);
             this.pending.set(requestId, { resolve: (value) => (clearTimeout(timer), resolve(value)), reject: (error) => (clearTimeout(timer), reject(error)) });
         });
@@ -232,7 +232,7 @@ function generationFlowOps(input: Record<string, unknown>, state: CanvasSnapshot
     const tokens = [`@[node:${textId}]`, ...referenceNodeIds.map((id) => `@[node:${id}]`)];
     const configInput = { ...input, prompt: tokens.join("\n") };
     return [
-        textNodeOp({ id: textId, text: prompt, title: String(input.title || "提示词") }, x, y),
+        textNodeOp({ id: textId, text: prompt, title: String(input.title || "Prompt") }, x, y),
         configNodeOp(configId, configInput, x + 420, y),
         { type: "connect_nodes", fromNodeId: textId, toNodeId: configId },
         ...referenceNodeIds.map((fromNodeId) => ({ type: "connect_nodes", fromNodeId, toNodeId: configId })),
@@ -250,10 +250,10 @@ function generationMode(value: unknown): "text" | "image" | "video" | "audio" {
 }
 
 function generationTitle(mode: "text" | "image" | "video" | "audio") {
-    if (mode === "text") return "文本生成";
-    if (mode === "video") return "视频生成";
-    if (mode === "audio") return "音频生成";
-    return "图片生成";
+    if (mode === "text") return "Text generation";
+    if (mode === "video") return "Video generation";
+    if (mode === "audio") return "Audio generation";
+    return "Image generation";
 }
 
 function findNode(state: CanvasSnapshot | null, id: string): CanvasNode | undefined {

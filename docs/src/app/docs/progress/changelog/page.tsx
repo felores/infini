@@ -7,8 +7,8 @@ import { join } from 'node:path';
 import type { Metadata } from 'next';
 import { getMDXComponents } from '@/components/mdx';
 
-const title = '更新日志';
-const description = '项目版本变更记录';
+const title = 'Changelog';
+const description = 'Project version change log';
 
 async function readChangelog() {
   return readFile(join(process.cwd(), '..', 'CHANGELOG.md'), 'utf8');

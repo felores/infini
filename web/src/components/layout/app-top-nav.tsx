@@ -45,15 +45,15 @@ export function AppTopNav() {
                                         WebkitMask: "url(/logo.svg) center / contain no-repeat",
                                     }}
                                 />
-                                <span className="text-base font-medium">无限画布</span>
+                                <span className="text-base font-medium">Infinite Canvas</span>
                             </Link>
 
                             <button
                                 type="button"
                                 className="ml-3 inline-flex size-8 shrink-0 items-center justify-center text-stone-600 transition hover:text-stone-950 md:hidden dark:text-stone-300 dark:hover:text-white"
                                 onClick={() => setMobileNavOpen(true)}
-                                aria-label="打开导航菜单"
-                                title="导航菜单"
+                                aria-label="Open navigation menu"
+                                title="Navigation menu"
                             >
                                 <Menu className="size-5" />
                             </button>
@@ -83,8 +83,8 @@ export function AppTopNav() {
 
                         <div className="my-auto flex h-9 min-w-0 items-center justify-end gap-2 justify-self-end whitespace-nowrap">
                             <CodexStatusButton />
-                            <Tooltip title={panelOpen ? "收起 Agent" : "打开 Agent"}>
-                                <Button type="text" shape="circle" className="!h-8 !w-8 !min-w-8" icon={<Bot className="size-4" />} onClick={togglePanel} aria-label="打开 Agent" />
+                            <Tooltip title={panelOpen ? "Collapse Agent" : "Open Agent"}>
+                                <Button type="text" shape="circle" className="!h-8 !w-8 !min-w-8" icon={<Bot className="size-4" />} onClick={togglePanel} aria-label="Open Agent" />
                             </Tooltip>
                             <UserStatusActions />
                         </div>
@@ -105,10 +105,10 @@ function CodexStatusButton() {
     const connectError = useAgentStore((state) => state.connectError);
     const openConfigDialog = useConfigStore((state) => state.openConfigDialog);
     const color = connectError ? "#dc2626" : connected ? "#16a34a" : enabled ? "#d97706" : "currentColor";
-    const title = connectError || (connected ? activity || "Codex 已连接" : enabled ? "Codex 连接中" : "Codex 未连接");
+    const title = connectError || (connected ? activity || "Codex Connected" : enabled ? "Codex Connecting" : "Codex Not connected");
     return (
         <Tooltip title={title}>
-            <Button type="text" shape="circle" className="relative !h-8 !w-8 !min-w-8" onClick={() => openConfigDialog(false, "codex")} aria-label="Codex 连接状态">
+            <Button type="text" shape="circle" className="relative !h-8 !w-8 !min-w-8" onClick={() => openConfigDialog(false, "codex")} aria-label="Codex Connection status">
                 <span className="mx-auto block size-4" style={{ background: color, WebkitMask: "url(/icons/openai.svg) center / contain no-repeat", mask: "url(/icons/openai.svg) center / contain no-repeat" }} />
                 <span className="absolute right-1 top-1 size-2 rounded-full border border-background" style={{ background: color }} />
             </Button>

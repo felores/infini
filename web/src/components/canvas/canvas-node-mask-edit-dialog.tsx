@@ -92,9 +92,9 @@ export function CanvasNodeMaskEditDialog({ dataUrl, open, onClose, onConfirm }: 
     const submit = () => {
         const nextPrompt = prompt.trim();
         const canvas = maskCanvasRef.current;
-        if (!nextPrompt) return setError("请输入修改要求");
+        if (!nextPrompt) return setError("Please entermodifyrequest");
         if (!canvas) return;
-        if (!canvasHasPaint(canvas)) return setError("请先涂抹局部区域");
+        if (!canvasHasPaint(canvas)) return setError("Please paint a local area first");
         onConfirm({ prompt: nextPrompt, maskDataUrl: buildEditMask(canvas) });
     };
 
@@ -124,34 +124,34 @@ export function CanvasNodeMaskEditDialog({ dataUrl, open, onClose, onConfirm }: 
 
                 <div className="flex min-h-[360px] flex-col gap-5">
                     <div>
-                        <h2 className="text-xl font-semibold">局部遮罩编辑</h2>
-                        <div className="mt-2 text-sm opacity-60">{image ? `${image.width} x ${image.height}px` : "读取中"}</div>
+                        <h2 className="text-xl font-semibold">Local Mask Edit</h2>
+                        <div className="mt-2 text-sm opacity-60">{image ? `${image.width} x ${image.height}px` : "Loading"}</div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-2">
                         <Button type={mode === "paint" ? "primary" : "default"} icon={<Brush className="size-4" />} onClick={() => setMode("paint")}>
-                            画笔
+                            Brush
                         </Button>
                         <Button type={mode === "erase" ? "primary" : "default"} icon={<Eraser className="size-4" />} onClick={() => setMode("erase")}>
-                            擦除
+                            Erase
                         </Button>
                     </div>
 
                     <div className="space-y-2">
                         <div className="flex items-center justify-between text-sm">
-                            <span className="font-medium opacity-75">笔刷大小</span>
+                            <span className="font-medium opacity-75">Brush size</span>
                             <span className="font-semibold">{brushSize}px</span>
                         </div>
                         <Slider min={8} max={160} step={2} value={brushSize} onChange={setBrushSize} />
                     </div>
 
                     <div className="space-y-2">
-                        <div className="text-sm font-medium opacity-75">修改要求</div>
+                        <div className="text-sm font-medium opacity-75">modifyrequest</div>
                         <Input.TextArea
                             rows={6}
                             value={prompt}
                             status={error && !prompt.trim() ? "error" : undefined}
-                            placeholder="例如：把选中区域改成金属材质，保持原图光影"
+                            placeholder="e.g. Change the selected area to metallic material, keeping the original image lighting"
                             onChange={(event) => {
                                 setPrompt(event.target.value);
                                 setError("");
@@ -162,14 +162,14 @@ export function CanvasNodeMaskEditDialog({ dataUrl, open, onClose, onConfirm }: 
 
                     <div className="mt-auto flex items-center justify-between gap-2">
                         <Button icon={<RotateCcw className="size-4" />} onClick={resetMask}>
-                            重置
+                            Reset
                         </Button>
                         <div className="flex items-center gap-2">
                             <Button icon={<X className="size-4" />} onClick={onClose}>
-                                取消
+                                Cancel
                             </Button>
                             <Button type="primary" icon={<WandSparkles className="size-4" />} onClick={submit}>
-                                AI 修改
+                                AI modify
                             </Button>
                         </div>
                     </div>

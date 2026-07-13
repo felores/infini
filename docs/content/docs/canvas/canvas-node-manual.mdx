@@ -1,65 +1,65 @@
 ---
-title: 画布节点操作手册
-description: 当前画布节点的主要用途与操作流程
+title: Canvas Node Manual
+description: Main uses and operation flows for canvas nodes
 ---
 
-# 画布节点操作手册
+# Canvas Node Manual
 
-本文档记录画布节点的主要用途和操作流程，方便使用和后续开发维护。当前先介绍文本节点。
+This document covers the main uses and operation flows for canvas nodes, for easy use and ongoing development. Currently covers text nodes first.
 
-## 文本节点
+## Text Nodes
 
-文本节点用于保存提示词、草稿、说明文案和 AI 生成的文字结果。它既可以作为独立文本内容，也可以作为下游生成配置节点的输入。
+Text nodes are used to save prompts, drafts, descriptions, and AI-generated text results. They can serve as standalone text content or as input for downstream generation config nodes.
 
-### 编辑文本内容
+### Editing Text Content
 
-- 双击文本节点内容区域，直接编辑节点里的文字。
-- 选中文本节点后，点击顶部工具栏的“编辑文字”，进入文字编辑状态。
-- 顶部工具栏的“缩小”和“放大”用于调整文本节点字号。
+- Double-click the text node content area to edit the text directly.
+- Select a text node, then click "Edit Text" in the top toolbar to enter text editing mode.
+- Use "Zoom out" and "Zoom in" in the top toolbar to adjust the text node font size.
 
-### 用下方对话框生成或修改文本
+### Generating or Modifying Text via the Dialog Below
 
-- 选中文本节点后，点击顶部工具栏的“编辑”，打开节点下方对话框。
-- 文本节点下方对话框只用于生成或改写文本，不承担生图功能。
-- 当文本节点为空时，输入框用于填写想生成的文本内容；点击发送后，结果会回填到当前文本节点。
-- 当文本节点已有内容时，输入框用于填写想把本段文本修改成什么；点击发送后，会在右侧生成新的文本节点，并自动连接原节点和新节点。
-- 输入内容可以手写，也可以从提示词库选择。
-- 对话框里的模型下拉来自全局配置里已拉取的模型列表；选择结果只作用于当前节点，不会修改其它节点或全局默认模型。
-- 如果下拉中没有模型，需要先打开配置弹窗拉取模型列表，并设置默认生图模型和默认文本模型。火山方舟 Agent Plan 若提示不支持 `/models`，请手动填写模型名。
+- Select a text node, then click "Edit" in the top toolbar to open the dialog below the node.
+- The dialog below a text node is only for generating or rewriting text; it does not handle image generation.
+- When the text node is empty, the input field is for entering the text you want to generate; after clicking send, the result fills the current text node.
+- When the text node already has content, the input field is for entering what you want to change the text to; after clicking send, a new text node is generated on the right and automatically connected to the original node.
+- Input can be hand-written or selected from the prompt library.
+- The model dropdown in the dialog comes from the globally fetched model list; the selection only applies to the current node and does not modify other nodes or the global default model.
+- If no models appear in the dropdown, open the config modal to fetch the model list and set default image and text models. If Volcano Ark Agent Plan reports `/models` as unsupported, enter model names manually.
 
-### 用文本节点生成图片
+### Generating Images from Text Nodes
 
-- 先在文本节点中准备好要用于生图的文本内容。
-- 点击文本节点顶部工具栏的“生图”按钮。
-- 系统会在文本节点右侧自动创建一个生成配置节点，并连接文本节点到生成配置节点。
-- 生成配置节点会读取上游文本内容作为生图提示词，并立即开始生成图片。
-- 后续需要调整模型、比例、数量时，可以在生成配置节点里修改后再次生成。
+- First prepare the text content for image generation in the text node.
+- Click the "Generate Image" button in the text node's top toolbar.
+- The system automatically creates a generation config node to the right of the text node and connects the text node to it.
+- The generation config node reads the upstream text content as the image prompt and immediately starts generating images.
+- To adjust model, ratio, or count later, modify the generation config node and regenerate.
 
-### 用图片节点继续生成图片
+### Continuing Image Generation from Image Nodes
 
-- 选中空图片节点后点击“生成”，会直接在当前节点里生成结果，不再额外保留一个空框。
-- 当数量为 `1` 时，生成结果会直接回填到当前图片节点。
-- 当数量大于 `1` 时，当前图片节点会作为主图节点，右侧继续生成对应数量的子图节点。
-- 如果图片节点本身已经有内容，则会沿用已有图片作为参考图，再生成新的图片批次。
-- 每个生成出来的图片节点都会在自身 `metadata` 下记录提示词、生成类型、模型、尺寸、质量、数量和参考图引用，方便后续重试。
-- 如果重试时参考图已经丢失或无法恢复，系统会直接提示，避免误发空的图生图请求。
+- Select an empty image node and click "Generate" to generate a result directly in the current node, without keeping an extra empty placeholder.
+- When count is `1`, the result fills the current image node directly.
+- When count is greater than `1`, the current image node becomes the main image node, with the corresponding number of child image nodes generated to the right.
+- If the image node already has content, the existing image is used as a reference image to generate a new batch.
+- Each generated image node records the prompt, generation type, model, size, quality, count, and reference image references in its own `metadata` for later retries.
+- If the reference image is lost or cannot be restored during retry, the system will notify directly to avoid sending empty image-to-image requests.
 
-### 视频节点
+### Video Nodes
 
-- 工具栏可以新建视频节点，也可以拖入或上传本地视频文件。
-- 视频节点使用原生播放器展示内容，可在节点内直接播放、暂停和拖动进度。
-- 空视频节点下方对话框可输入提示词生成视频，结果会回填到当前节点。
-- 从文本、图片或配置节点创建视频生成时，会在右侧生成新的视频节点并自动连接。
-- 生成配置节点的视频模式会读取上游文本作为 prompt，读取上游图片作为参考图，读取上游视频作为参考视频，并在输入预览里显示参考视频。
-- 视频生成接口支持 OpenAI 风格的 `POST /v1/videos`、`GET /v1/videos/{id}` 和 `GET /v1/videos/{id}/content`。
-- 使用火山方舟 Agent Plan / Seedance 2.0 时，Base URL 配置为 `https://ark.cn-beijing.volces.com/api/plan/v3`，模型名使用 Seedance 2.0 对应模型；系统会改用 `POST /contents/generations/tasks` 创建异步任务，并轮询 `GET /contents/generations/tasks/{id}`。
-- Agent Plan 专属 `/api/plan/v3` 当前未提供 OpenAI `/models` 模型列表接口，配置弹窗不会伪造模型列表；请手动填写 `doubao-seedance-2.0` 或文档列出的其他可用模型。
-- Seedance 参考视频更建议使用公网可访问 URL；本地素材由前端读取后传给兼容接口，是否可用取决于具体上游。
+- The toolbar can create video nodes; you can also drag in or upload local video files.
+- Video nodes use a native player for content display, with play, pause, and seek within the node.
+- The dialog below an empty video node can accept a prompt to generate video; the result fills the current node.
+- When creating video generation from text, image, or config nodes, a new video node is generated on the right and auto-connected.
+- The video mode of the generation config node reads upstream text as the prompt, upstream images as reference images, and upstream videos as reference videos, displaying reference videos in the input preview.
+- The video generation API supports OpenAI-style `POST /v1/videos`, `GET /v1/videos/{id}`, and `GET /v1/videos/{id}/content`.
+- When using Volcano Ark Agent Plan / Seedance 2.0, set the Base URL to `https://ark.cn-beijing.volces.com/api/plan/v3` and use the Seedance 2.0 model name; the system switches to `POST /contents/generations/tasks` to create async tasks and polls `GET /contents/generations/tasks/{id}`.
+- Agent Plan's `/api/plan/v3` does not currently provide an OpenAI `/models` model list endpoint; the config modal will not fabricate a model list. Please manually enter `doubao-seedance-2.0` or other available models listed in the docs.
+- Seedance reference videos are best served via publicly accessible URLs; local assets are read by the frontend and passed to the compatible API, and availability depends on the specific upstream.
 
-### 推荐流程
+### Recommended Workflow
 
-1. 新建文本节点，写入图片创作想法。
-2. 打开文本节点下方对话框，让 AI 优化或扩写这段提示词。
-3. 改写结果会生成到新的文本节点，保留原始文本方便对比。
-4. 确认文本节点内容后，点击顶部工具栏“生图”。
-5. 在自动创建的生成配置节点中继续调整图片参数或重新生成。
+1. Create a new text node and write your image creation idea.
+2. Open the dialog below the text node and let AI optimize or expand the prompt.
+3. The rewritten result generates into a new text node, preserving the original text for comparison.
+4. After confirming the text node content, click "Generate Image" in the top toolbar.
+5. Continue adjusting image parameters or regenerate in the automatically created generation config node.

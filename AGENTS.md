@@ -41,7 +41,7 @@ These instructions govern AI and automated development in this repository. Follo
 - Configure admin themes, backgrounds, card shadows, and table colors centrally in `web/src/lib/app-theme.ts`, `AppProviders`, or a necessary global CSS scope. Page-private components should not implement their own `dark ? ...` theme branches.
 - Prefer function components and existing hooks. Do not add another large state-management system.
 - Prefer `lucide-react` or the Ant Design icons already used by the project.
-- Keep user-facing page copy in Chinese.
+- Keep user-facing page copy in English.
 - Do not accumulate unrelated logic in components. Move genuinely complex logic into a same-directory utility or small component.
 - Let components own their styles. Prefer Tailwind classes or small inline styles for private styling; do not add large global CSS blocks for one component.
 - Reserve global CSS for foundational variables, resets, cross-page styles, and necessary third-party overrides. Do not accumulate page-private styles in `globals.css`.
@@ -66,7 +66,7 @@ These instructions govern AI and automated development in this repository. Follo
 - Put future work in `docs/content/docs/progress/todo.mdx`.
 - Put implemented changes that still require user validation in `docs/content/docs/progress/pending-test.mdx`.
 - Use `docs/content/docs/progress/pending-test.mdx` for the concrete, testable changes in the current version. Keep `CHANGELOG.md` Unreleased entries as version-level summaries rather than duplicating implementation details.
-- After a major user-visible feature, interface, or tool change, add one Chinese summary line under `CHANGELOG.md` Unreleased with the appropriate literal prefix: `[新增]`, `[调整]`, `[修复]`, or `[优化]`. Internal refactors, formatting, and invisible changes do not need entries.
+- After a major user-visible feature, interface, or tool change, add one English summary line under `CHANGELOG.md` Unreleased with the appropriate literal prefix: `[Added]`, `[Changed]`, `[Fixed]`, or `[Optimized]`. Internal refactors, formatting, and invisible changes do not need entries.
 - When a todo is implemented, move it from `docs/content/docs/progress/todo.mdx` to `docs/content/docs/progress/pending-test.mdx`. Update `docs/content/docs/overview/features.mdx` only after the user confirms testing passed.
 - Before completing a task, check whether `docs/content/docs/progress/todo.mdx` and `docs/content/docs/progress/pending-test.mdx` need updates. Confirm no update is needed when functionality and planned work are unchanged.
 - Do not add expiration dates to documentation unless the user explicitly requests a specific date.
@@ -154,18 +154,37 @@ All routes except `/health` and `/config` require a valid `x-canvas-agent-token`
 
 ## Development Commands
 
-Three independent packages; run commands inside each package directory.
+Run these commands from the repository root. The three packages are independent.
 
-- **web/** (Bun): `bun install`, `bun run dev` (dev server on :3000), `bun run build`, `bun run typecheck`, `bun run test` (Vitest), `bun run test:run`, `bun run test:e2e` (Playwright).
-- **canvas-agent/** (Bun): `bun install`, `bun run dev` (tsx), `bun run build` (tsc), `bun run start`.
-- **docs/** (Bun): `bun install`, `bun run dev` (Next.js), `bun run build`.
+```bash
+# Web app
+bun install --cwd web
+bun run --cwd web dev       # Vite development server on port 51309
+bun run --cwd web build
+bun run --cwd web start     # Preview the production build on port 51309
+bun run --cwd web typecheck
+bun run --cwd web test:run  # Vitest
+bun run --cwd web test:e2e  # Playwright
+
+# Local Canvas Agent
+bun install --cwd canvas-agent
+bun run --cwd canvas-agent dev
+bun run --cwd canvas-agent build
+bun run --cwd canvas-agent start
+
+# Documentation site
+bun install --cwd docs
+bun run --cwd docs dev
+bun run --cwd docs build
+```
 
 ## Testing Strategy
 
 - **Vitest** (node environment) for pure TypeScript logic under `tests/**/*.test.ts` (excludes `tests/e2e/**`).
-- **Playwright E2E** for rendered UI under `tests/e2e/**` (Chromium only, dev server on `127.0.0.1:3000`).
+- **Playwright E2E** for rendered UI under `tests/e2e/**` (Chromium only, dev server on `127.0.0.1:51309`).
 - No jsdom component runner by default; `.tsx` component tests are opt-in (add `@testing-library/react` only when needed).
-- **Browser diagnostics** (`console.error`, `pageerror`, `requestfailed`, HTTP >=500) are captured in every E2E test and fail the run unless explicitly allowlisted. This is release-blocking.
+- **Browser diagnostics** (`console.error`, `pageerror`, `requestfailed`, HTTP >=500 with up to 4 KB of response body) are captured in every E2E test and fail the run unless explicitly allowlisted. This is release-blocking.
+- `.harness/init.sh` installs locked dependencies for both the web app and Canvas Agent, then stores private service logs and PID files under `.harness/`.
 
 ## Development Harness
 

@@ -17,14 +17,14 @@ export function baseOptions(): BaseLayoutProps {
     },
     links: [
       {
-        text: '文档导航',
+        text: 'Docs',
         url: '/docs/overview/quick-start',
         on: 'nav',
       },
       {
         text: (
           <span className="inline-flex items-center gap-1.5">
-            <span>在线体验</span>
+            <span>Live Demo</span>
             <ArrowUpRight className="size-4" />
           </span>
         ),

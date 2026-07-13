@@ -10,7 +10,7 @@ export function parseToolInput(name: ToolName, input: unknown) {
 }
 
 export function compactCanvasState(state: CanvasSnapshot | null) {
-    if (!state) throw new Error("当前没有已连接画布");
+    if (!state) throw new Error("No connected canvas");
     return { ...state, nodes: (state.nodes || []).map(compactNode) };
 }
 

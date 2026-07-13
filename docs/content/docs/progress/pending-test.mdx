@@ -1,49 +1,53 @@
 ---
-title: 待测试
-description: 当前版本已实现但仍需人工验证的变更项
+title: Pending Test
+description: Changes implemented in the current version that still require manual verification
 ---
 
-# 待测试
+# Pending Test
 
-- 本地 Agent 安全加固：API Base URL 从链接导入时若未同时提供新 Key，会清除旧 Key；需验证旧 Key 不会发送到新地址。
-- 本地 Agent 安全加固：连接地址仅允许 `localhost`、`127.0.0.1` 和 `::1`，启动凭据改放 URL fragment 并在读取后立即清除，普通请求改用 token header；需验证自动连接、工具确认和历史记录正常。
-- 本地 Agent 安全加固：Windows 启动 Claude 不再经过 shell，本地配置目录和 token 文件分别收紧为 `0700` / `0600`；需在对应平台验证。
-- Canvas Agent 发布：源码包版本提升为 `0.1.1`，发布 workflow 改用冻结 Bun lockfile、显式构建和禁用 publish scripts；需由上游 npm 所有者发布后再把插件 MCP pin 从 `0.1.0` 更新到 `0.1.1`。
-- 供应链加固：插件 MCP 固定使用已审计的 `@basketikun/canvas-agent@0.1.0`，GitHub Actions 固定到完整 commit SHA；需验证插件和发布 workflows 正常。
-- 本地 Agent 连接说明：新增提醒说明只有安装 Codex 插件或手动添加 MCP 后才会增加 Codex token 消耗，直接运行当前仓库源码不会安装 MCP；需验证文案位置清晰。
-- 本地 Agent 连接说明：画布面板和配置页 Codex Tab 改为区分“Codex 插件启动画布”和“直接运行 Agent 后网页连接”两种方式，需验证文案和布局清晰。
-- 全站 Agent：Agent 面板从画布页抽离为全站常驻面板，挂在全局布局右侧，开/关只挤压左侧内容不遮挡；顶栏和画布工具条各有一个开关按钮，需验证在首页、生图、视频、素材、提示词库、画布等页面都能打开面板并保持 SSE 连接不断开。
-- 全站 Agent：新增 `site_navigate` 工具，Agent 可直接跳转 `/`、`/canvas`、`/canvas/:id`、`/image`、`/video`、`/prompts`、`/assets`、`/config`；导航直接执行不走工具确认，需验证跳转正确且面板不消失。
-- 全站 Agent：画布工具（canvas_apply_ops 等）仅在当前处于画布页时可用，不在画布页调用会返回“当前不在画布页，请先用 site_navigate 打开画布”，需验证 Agent 会先导航到画布再执行画布操作。
-- 全站 Agent：Codex 会话改为单一站点级连续线程（不再按 canvasId 分），跨页面/跨画布保持同一条对话上下文，历史记录即这条线程；本地 Agent workspace 从按画布分改为固定 `site` workspace（`~/.infinite-canvas/codex-workspaces/site`），已装 `@basketikun/canvas-agent` 的用户需更新到新版本才生效。
-- 全站 Agent：移除仅前端调用 OpenAI responses 接口的在线画布助手死代码（含 `requestToolResponse`），Agent 统一走 MCP + 本地 Codex 链路。
-- 画布节点名称：每个节点保留 `title` 名称字段，默认名称显示在节点上方，双击名称可直接编辑，节点信息弹窗和 JSON 可查看该字段。
-- 画布节点工具条：节点顶部工具条改为点击选中节点后显示，单纯鼠标移入 / 移出节点不应再频繁弹出。
-- 画布组节点：组内子节点优先响应点击和拖拽；当鼠标位于组内节点上时，应移动 / 编辑该节点，而不是移动整个组。
-- 画布组节点：工具栏新增“组”节点，普通节点拖入组区域会高亮目标组，松手后自动吸附进组；拖出组区域会解除归属，拖动组节点会一起移动组内子节点。
-- GitHub Pages：新增版本 tag 触发的前端静态站点自动发布 workflow，需在仓库 Pages 设置中选择 GitHub Actions 并验证路由刷新回退。
-- 画布图片切图：行数 / 列数会生成可直接拖拽的等分切图线，并支持新增横向 / 纵向线、删除单条线、重置切图线和切片数量预览。
-- Codex App 插件文档：新增插件安装教程，区分 AI 自动安装、手动安装和本仓库开发调试安装；同步优化插件 README 与技能说明。
-- 本地 Codex 连接画布文档：新增 Canvas Agent、MCP、SSE 与浏览器画布交互原理说明，需确认文档导航和描述是否清晰。
-- 顶部导航：缩小桌面顶部导航栏高度，导航项下划线和内容垂直对齐需确认。
-- 配置与用户偏好：新增独立顶部导航页面，并在页面和弹窗中复用同一套配置面板；新增 Codex Tab，展示插件安装和本地 Agent 启动步骤，可配置本地 Agent 地址、Connect token 和工具执行确认开关。
-- Codex 全局连接：配置页可直接连接本地 Canvas Agent，连接状态同步到画布和顶部 OpenAI 状态图标，刷新后会按本地保存的地址和 token 自动尝试重连；需验证已连接、连接中、连接失败、断开和刷新自动重连状态。
-- 画布 Agent：Codex 旧 thread 在重启后不可用时会自动新建会话并重试，需验证进入画布直接发送消息不会再出现 `thread not loaded` 或 `no rollout found`。
-- 画布 Agent：切换不同画布时会清空并重新加载当前 canvasId 对应的 Codex 会话，需验证不会继续显示上一个画布的对话。
-- 画布 Agent：右侧 Agent 面板移除网站 / 本机模式切换，固定使用本机 Agent。
-- 配置与用户偏好：每个模型渠道新增 OpenAI / Gemini 调用格式选择，默认 OpenAI，切换默认格式时同步更新默认 Base URL；渠道 Tab 增加紧凑醒目的提醒，说明模型是否可选需要到“模型”Tab 选择。
-- Gemini 调用格式：支持拉取 Gemini 模型列表，并用于文本问答、在线 Agent 工具调用、基础生图和图生图请求。
-- Gemini 生图：生图工作台和画布生图会把尺寸配置转换为 Gemini `responseFormat.image.aspectRatio` 传入，需验证 1:1、9:16、16:9 及自定义像素尺寸的输出比例。
-- 音频和视频生成：选择 Gemini 调用格式时先给出不支持提示，仍需使用 OpenAI 兼容渠道。
-- WebDAV 同步：移除 Next.js 转发代理和连接方式选择，改为浏览器前端直接连接 WebDAV 服务。
-- 提示词库：移除 Next.js route 抓取和服务端内存缓存，改为浏览器前端直连 GitHub 原始文件并缓存到 IndexedDB。
-- 提示词库：移除已 404 的 `EvoLinkAI/awesome-gpt-image-2-API-and-Prompts` 来源。
-- 前端构建：移除 Next.js，改为 Vite + React Router，并将前端目录调整为 `pages` / `components` / `stores` / `lib` / `layouts` / `styles`，需验证首页、图片/视频工作台、素材、提示词库和画布路由跳转。
-- 前端构建：修复 TypeScript 严格检查下的构建报错。
-- Vercel 部署：新增 `web` 和 `docs` 两个子项目的 Vercel 配置，需分别验证静态前端和文档站部署。
-- Docker 部署：运行镜像从 Node serve 改为 nginx 静态托管，需验证前端路由刷新回退。
-- 环境变量：移除过期的后端 `.env.example` 示例文件。
-- 生图工作台：修复失败图片点击重试后只保存在页面状态、刷新或跳转后丢失的问题，重试成功结果会写入本地图片存储和生成记录。
-- 视频生成：任务查询接口直接返回 `url` / `result_url` / `video_url` 时会跳过 `/content` 下载，并优先保存到浏览器本地媒体存储。
-- 视频生成：任务创建或查询失败时会解析接口返回的 `msg` / `message` / 嵌套 JSON 错误，并在生成结果失败卡片里展示真实原因。
-- 画布生成配置：修复切换文本/视频/音频模式时模型选择仍显示为生图模型（gpt-image-2）的问题，切换模式后应自动匹配对应能力的默认模型。
+- Image generation API: GPT Image generation/edit requests now use `output_format`, while DALL-E requests retain `response_format`; verify official OpenAI `gpt-image-2` generation no longer returns HTTP 400 and DALL-E compatibility remains intact.
+- Multi-image editing: one reference is uploaded as `image`, while two or more references use repeated `image[]` multipart fields; verify canvas generation with two, three, and larger reference sets.
+- Prompt and Agent rendering: empty third-party prompt covers no longer emit empty `src` warnings, duplicate cached tags are normalized before rendering, and Agent streaming uses stable text updates without flicker; verify home, prompt library, prompt details, and a complete Codex reply.
+- Local Agent diagnostics loop: source-mode startup installs Canvas Agent dependencies via frozen lockfile, upgrades Codex to `0.144.1`; on chat request failure, displays the real server/subprocess error, Playwright records 500 response bodies, and the harness stores service logs and PIDs privately in `.harness/`; needs verification of first-startup, normal conversation, and failure info display.
+- Local Agent security hardening: when importing API Base URL from a link without providing a new Key simultaneously, the old Key is cleared; needs verifying the old Key is not sent to the new address.
+- Local Agent security hardening: connection addresses are restricted to `localhost`, `127.0.0.1`, and `::1`; startup credentials moved to URL fragment and cleared immediately after reading; regular requests use a token header; needs verifying auto-connect, tool confirmation, and history work normally.
+- Local Agent security hardening: Windows Claude launch no longer goes through shell; local config directory and token file permissions tightened to `0700` / `0600`; needs verification on the corresponding platform.
+- Canvas Agent release: source package version bumped to `0.1.1`; release workflow switched to frozen Bun lockfile, explicit build, and disabled publish scripts; after upstream npm owner publishes, update plugin MCP pin from `0.1.0` to `0.1.1`.
+- Supply chain hardening: plugin MCP pinned to audited `@basketikun/canvas-agent@0.1.0`; GitHub Actions pinned to full commit SHAs; needs verifying plugin and release workflows work.
+- Local Agent connection instructions: new reminder that only installing the Codex plugin or manually adding MCP increases Codex token consumption; running the current repo source directly does not install MCP; needs verifying the message placement is clear.
+- Local Agent connection instructions: canvas panel and config page Codex Tab now distinguish between "launch canvas via Codex plugin" and "connect from web after running Agent directly"; needs verifying copy and layout are clear.
+- Site-wide Agent: Agent panel lifted from canvas page to a site-wide persistent panel mounted on the global layout right side; toggling only pushes left content without overlapping; top nav and canvas toolbar each have a toggle button; needs verifying the panel opens on home, image, video, assets, prompts, canvas pages and maintains SSE connection.
+- Site-wide Agent: new `site_navigate` tool lets Agent jump directly to `/`, `/canvas`, `/canvas/:id`, `/image`, `/video`, `/prompts`, `/assets`, `/config`; navigation executes directly without tool confirmation; needs verifying jumps are correct and panel persists.
+- Site-wide Agent: canvas tools (canvas_apply_ops etc.) are only available when on a canvas page; calling them off-canvas returns "Not currently on a canvas page; use site_navigate to open a canvas first"; needs verifying Agent navigates to canvas before executing canvas operations.
+- Site-wide Agent: Codex session changed to a single site-level continuous thread (no longer split by canvasId); cross-page/cross-canvas shares the same conversation context; history is this thread; local Agent workspace changed from per-canvas to a fixed `site` workspace (`~/.infinite-canvas/codex-workspaces/site`); users with `@basketikun/canvas-agent` installed need to update to the new version to take effect.
+- Site-wide Agent: remove dead code for the online canvas assistant that called OpenAI responses API from the frontend (including `requestToolResponse`); Agent unifies on MCP + local Codex pipeline.
+- Canvas node name: each node retains a `title` name field; default name shown above the node; double-click to edit directly; visible in node info modal and JSON.
+- Canvas node toolbar: node top toolbar now shows on click-select; simple mouse enter/leave should no longer trigger frequent pop-ups.
+- Canvas group nodes: child nodes inside a group respond to click and drag first; when the mouse is over a node inside a group, it should move/edit that node, not the entire group.
+- Canvas group nodes: toolbar adds a "Group" node; dragging a normal node into a group area highlights the target group; releasing snaps it into the group; dragging out releases the association; dragging a group node moves all child nodes together.
+- GitHub Pages: new version-tag-triggered frontend static site auto-publish workflow; needs selecting GitHub Actions in repo Pages settings and verifying route refresh fallback.
+- Canvas image split: rows/columns generate draggable equal-division split lines; supports adding horizontal/vertical lines, deleting individual lines, resetting split lines, and slice count preview.
+- Codex App plugin docs: new plugin installation tutorial distinguishing AI auto-install, manual install, and this-repo dev-debug install; also improved plugin README and skill docs.
+- Local Codex canvas connection docs: new explanation of Canvas Agent, MCP, SSE, and browser canvas interaction principles; needs confirming doc navigation and descriptions are clear.
+- Top navigation: reduce desktop top nav bar height; nav item underline and content vertical alignment need confirmation.
+- Configuration and user preferences: new standalone top nav page reusing the same config panel in both page and modal; new Codex Tab showing plugin installation and local Agent startup steps; configurable local Agent address, Connect token, and tool execution confirmation toggle.
+- Codex global connection: config page can connect directly to the local Canvas Agent; connection status syncs to canvas and top OpenAI status icon; after refresh, auto-reconnects using locally saved address and token; needs verifying connected, connecting, failed, disconnected, and refresh auto-reconnect states.
+- Canvas Agent: when old Codex thread is unavailable after restart, it auto-creates a new session and retries; needs verifying entering canvas and sending a message directly no longer shows `thread not loaded` or `no rollout found`.
+- Canvas Agent: switching canvases clears and reloads the Codex session for the current canvasId; needs verifying it no longer shows the previous canvas's conversation.
+- Canvas Agent: right-side Agent panel removes website/local mode toggle; fixed to local Agent.
+- Configuration and user preferences: each model channel adds OpenAI/Gemini call format selection, defaulting to OpenAI; switching default format syncs the default Base URL; channel Tab adds a compact prominent reminder that model availability must be configured in the "Models" Tab.
+- Gemini call format: supports fetching Gemini model lists and using them for text Q&A, online Agent tool calls, basic image generation, and image-to-image requests.
+- Gemini image generation: image workbench and canvas generation convert size config to Gemini `responseFormat.image.aspectRatio`; needs verifying 1:1, 9:16, 16:9, and custom pixel size output ratios.
+- Audio and video generation: selecting Gemini call format shows an unsupported notice; must still use OpenAI-compatible channels.
+- WebDAV sync: remove Next.js forwarding proxy and connection method selection; browser frontend now connects directly to WebDAV service.
+- Prompt library: remove Next.js route fetching and server-side in-memory cache; browser frontend now directly fetches GitHub raw files and caches to IndexedDB.
+- Prompt library: remove 404 `EvoLinkAI/awesome-gpt-image-2-API-and-Prompts` source.
+- Frontend build: remove Next.js, switch to Vite + React Router; restructure frontend directories to `pages` / `components` / `stores` / `lib` / `layouts` / `styles`; needs verifying home, image/video workbench, assets, prompts, and canvas route navigation.
+- Frontend build: fix TypeScript strict-mode build errors.
+- Vercel deployment: add Vercel config for `web` and `docs` sub-projects; needs separately verifying static frontend and docs site deployment.
+- Docker deployment: runtime image changed from Node serve to nginx static hosting; needs verifying frontend route refresh fallback.
+- Environment variables: remove expired backend `.env.example` file.
+- Image workbench: fix failed image retry result only saved in page state and lost after refresh or navigation; retry success result now writes to local image storage and generation records.
+- Video generation: when task query endpoint returns `url` / `result_url` / `video_url` directly, skip `/content` download and save to browser local media storage first.
+- Video generation: on task creation or query failure, parse the endpoint's `msg` / `message` / nested JSON error and display the real cause in the generation result failure card.
+- Canvas generation config: fix model selection still showing image model (gpt-image-2) when switching to text/video/audio mode; mode switch should auto-match the default model for the corresponding capability.

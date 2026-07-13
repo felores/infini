@@ -1,13 +1,13 @@
 ---
-title: Docker 部署
-description: 使用 Docker Compose 部署无限画布
+title: Docker Deploy
+description: Deploy Infinite Canvas using Docker Compose
 ---
 
-# Docker 部署
+# Docker Deploy
 
-如果你希望在自己的机器或服务器上运行项目，可以直接使用 Docker Compose。
+If you want to run the project on your own machine or server, you can use Docker Compose directly.
 
-## 使用发布镜像
+## Using Published Image
 
 ```bash
 git clone git@github.com:basketikun/infinite-canvas.git
@@ -15,38 +15,38 @@ cd infinite-canvas
 docker compose up -d
 ```
 
-启动后访问：
+After starting, visit:
 
 ```text
 http://localhost:3000
 ```
 
-## 本地构建镜像
+## Building Image Locally
 
-如果需要基于当前源码构建镜像：
+If you need to build an image from the current source:
 
 ```bash
 docker compose -f docker-compose.local.yml up -d --build
 ```
 
-## 文档站镜像
+## Docs Site Image
 
-文档站位于 `docs/` 目录，按带服务端能力的 Next.js standalone 应用单独构建，不打进主应用镜像。
+The docs site is in the `docs/` directory, built separately as a Next.js standalone app with server capabilities. It is not included in the main app image.
 
-使用发布镜像：
+Using published image:
 
 ```bash
 cd docs
 docker compose up -d
 ```
 
-基于当前源码本地构建：
+Building from current source:
 
 ```bash
 cd docs
 docker compose -f docker-compose.local.yml up -d --build
 ```
 
-## 数据说明
+## Data Notes
 
-当前主应用镜像只启动 Next.js。画布、我的素材、生成记录和 AI API Key 默认保存在浏览器本地；第三方提示词由浏览器前端直连拉取，不需要额外挂载数据目录。
+The main app image only starts Next.js. Canvas data, My Assets, generation logs, and the AI API Key are stored in the browser by default; third-party prompts are fetched directly by the browser frontend, so no additional data volume mounting is needed.

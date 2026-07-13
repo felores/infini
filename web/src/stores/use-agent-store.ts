@@ -77,7 +77,7 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
     loadingThreads: false,
     activeTab: "setup",
     confirmTools: true,
-    activity: "就绪",
+    activity: "Ready",
     connectError: "",
     pendingTool: null,
     setAgentState: (patch) => set(patch),
@@ -94,18 +94,18 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
     connectAgent: () => {
         const normalized = normalizeLoopbackUrl(get().url);
         const token = get().token.trim();
-        if (!normalized || !token) return set({ connectError: "请填写 Local URL 和 Connect token" });
+        if (!normalized || !token) return set({ connectError: "Please fill in the Local URL and Connect token" });
         localStorage.setItem("canvas-agent-url", normalized);
         localStorage.setItem("canvas-agent-token", token);
-        // 只设 enabled=true，由 CanvasLocalAgentPanel 的 useEffect 统一负责开 SSE
-        set({ url: normalized, token, enabled: true, activity: "连接中", connectError: "" });
+        // Set enabled=true; CanvasLocalAgentPanel's useEffect handles opening SSE
+        set({ url: normalized, token, enabled: true, activity: "Connecting", connectError: "" });
     },
     disconnectAgent: (patch = {}) => {
         agentSource?.close();
         agentSource = null;
         if (connectTimer) clearTimeout(connectTimer);
         connectTimer = null;
-        set({ enabled: false, connected: false, activity: "离线", ...patch });
+        set({ enabled: false, connected: false, activity: "Offline", ...patch });
     },
     addMessage: (item) => set((state) => ({ messages: [...state.messages.slice(-120), item] })),
     addEventLog: (item) => set((state) => ({ eventLogs: [...state.eventLogs.slice(-160), item] })),

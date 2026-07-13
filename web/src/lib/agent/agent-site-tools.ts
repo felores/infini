@@ -9,8 +9,8 @@ import { useAssetStore } from "@/stores/use-asset-store";
 import { modelOptionLabel, modelOptionName, normalizeModelOptionValue, useConfigStore } from "@/stores/use-config-store";
 import { useWorkbenchAgentStore } from "@/stores/use-workbench-agent-store";
 
-// 在网页端执行 Agent 的「站点级」工具（画布列表、工作台生成、提示词搜索、素材增删查等）。
-// 这些工具的数据都在浏览器本地（localforage / zustand），因此由本模块直接读写对应 store 后返回结果。
+// Executes the Agent's "site-level" tools in the browser (canvas list, workbench generation, prompt search, asset CRUD, etc.).
+// All data for these tools lives locally in the browser (localforage / zustand), so this module reads/writes the corresponding stores directly and returns results.
 
 export const SITE_TOOL_NAMES = [
     "canvas_list_projects",
@@ -30,14 +30,14 @@ export function isSiteTool(name: string): name is SiteToolName {
 }
 
 export const SITE_TOOL_LABELS: Record<SiteToolName, string> = {
-    canvas_list_projects: "画布列表",
-    workbench_image_get_config: "生图配置",
-    workbench_image_generate: "生图工作台生成",
-    workbench_video_get_config: "视频配置",
-    workbench_video_generate: "视频创作台生成",
-    prompts_search: "搜索提示词",
-    assets_list: "素材列表",
-    assets_add: "添加素材",
+    canvas_list_projects: "Canvas list",
+    workbench_image_get_config: "Image config",
+    workbench_image_generate: "Image workbench generate",
+    workbench_video_get_config: "Video config",
+    workbench_video_generate: "Video workbench generate",
+    prompts_search: "Search prompts",
+    assets_list: "Asset list",
+    assets_add: "Add asset",
 };
 
 type SiteToolInput = Record<string, unknown>;
@@ -61,13 +61,13 @@ export async function runSiteTool(name: SiteToolName, input: SiteToolInput, navi
         case "assets_add":
             return addAsset(input);
         default:
-            throw new Error(`未知工具：${name}`);
+            throw new Error(`Unknown tool: ${name}`);
     }
 }
 
 function listCanvasProjects(input: SiteToolInput) {
     const { projects, hydrated } = useCanvasStore.getState();
-    if (!hydrated) throw new Error("画布还在加载中，请稍后重试");
+    if (!hydrated) throw new Error("Canvas is still loading, please retry shortly");
     const keyword = String(input.keyword || "").trim().toLowerCase();
     const filtered = keyword ? projects.filter((project) => project.title.toLowerCase().includes(keyword)) : projects;
     const { page, pageSize, start, end } = paginate(input, filtered.length, 20);
@@ -79,7 +79,7 @@ function listCanvasProjects(input: SiteToolInput) {
         nodeCount: project.nodes.length,
         connectionCount: project.connections.length,
     }));
-    return { total: filtered.length, page, pageSize, items, hint: "用 site_navigate 跳转 /canvas/{id} 打开对应画布" };
+    return { total: filtered.length, page, pageSize, items, hint: "Use site_navigate to jump to /canvas/{id} to open the corresponding canvas" };
 }
 
 function getImageConfig() {
@@ -119,7 +119,7 @@ function runImageWorkbench(input: SiteToolInput, navigate: NavigateFunction) {
     const run = input.run !== false;
     navigate("/image");
     useWorkbenchAgentStore.getState().dispatchImage({ prompt, run });
-    return { ok: true, navigated: "/image", prompt, run, applied, note: run ? "已跳转生图工作台并触发生成，结果请稍后在工作台查看" : "已跳转生图工作台并填入参数，未触发生成" };
+    return { ok: true, navigated: "/image", prompt, run, applied, note: run ? "Navigated to image workbench and triggered generation; check results in the workbench shortly" : "Navigated to image workbench and filled in parameters without triggering generation" };
 }
 
 function getVideoConfig() {
@@ -174,14 +174,14 @@ function runVideoWorkbench(input: SiteToolInput, navigate: NavigateFunction) {
     const run = input.run !== false;
     navigate("/video");
     useWorkbenchAgentStore.getState().dispatchVideo({ prompt, run });
-    return { ok: true, navigated: "/video", prompt, run, applied, note: run ? "已跳转视频创作台并触发生成，结果请稍后在工作台查看" : "已跳转视频创作台并填入参数，未触发生成" };
+    return { ok: true, navigated: "/video", prompt, run, applied, note: run ? "Navigated to video workbench and triggered generation; check results in the workbench shortly" : "Navigated to video workbench and filled in parameters without triggering generation" };
 }
 
 async function searchPrompts(input: SiteToolInput) {
     const page = Math.max(1, Math.floor(Number(input.page)) || 1);
     const pageSize = Math.max(1, Math.min(50, Math.floor(Number(input.pageSize)) || 20));
     const tags = Array.isArray(input.tags) ? input.tags.filter((tag): tag is string => typeof tag === "string") : [];
-    const result = await fetchPrompts({ keyword: String(input.keyword || ""), category: String(input.category || "全部"), tag: tags, page, pageSize });
+    const result = await fetchPrompts({ keyword: String(input.keyword || ""), category: String(input.category || "All"), tag: tags, page, pageSize });
     return {
         total: result.total,
         page,
@@ -194,7 +194,7 @@ async function searchPrompts(input: SiteToolInput) {
 
 function listAssets(input: SiteToolInput) {
     const { assets, hydrated } = useAssetStore.getState();
-    if (!hydrated) throw new Error("素材还在加载中，请稍后重试");
+    if (!hydrated) throw new Error("Assets are still loading, please retry shortly");
     const kind = input.kind === "text" || input.kind === "image" || input.kind === "video" ? input.kind : "all";
     const keyword = String(input.keyword || "").trim().toLowerCase();
     const filtered = assets.filter((asset) => {
@@ -221,30 +221,30 @@ function listAssets(input: SiteToolInput) {
 async function addAsset(input: SiteToolInput) {
     const kind = input.kind;
     const title = String(input.title || "").trim();
-    if (!title) throw new Error("请提供素材标题 title");
+    if (!title) throw new Error("Please provide an asset title");
     const tags = Array.isArray(input.tags) ? input.tags.filter((tag): tag is string => typeof tag === "string") : [];
     const source = typeof input.source === "string" ? input.source : "Agent";
     const note = typeof input.note === "string" ? input.note : undefined;
     const store = useAssetStore.getState();
     if (kind === "text") {
         const content = String(input.content || "").trim();
-        if (!content) throw new Error("kind=text 时需要提供 content 文本内容");
+        if (!content) throw new Error("kind=text requires a content text value");
         const id = store.addAsset({ kind: "text", title, coverUrl: "", tags, source, note, data: { content } });
         return { ok: true, id, kind: "text" };
     }
     if (kind === "image") {
         const imageUrl = String(input.imageUrl || "").trim();
-        if (!imageUrl) throw new Error("kind=image 时需要提供 imageUrl（图片地址或 dataURL）");
+        if (!imageUrl) throw new Error("kind=image requires an imageUrl (image address or dataURL)");
         let stored;
         try {
             stored = await uploadImage(imageUrl);
         } catch {
-            throw new Error("无法读取该图片地址，请改用 dataURL 或可跨域访问的图片链接");
+            throw new Error("Cannot read this image address; use a dataURL or a CORS-accessible image URL");
         }
         const id = store.addAsset({ kind: "image", title, coverUrl: stored.url, tags, source, note, data: { dataUrl: stored.url, storageKey: stored.storageKey, width: stored.width, height: stored.height, bytes: stored.bytes, mimeType: stored.mimeType } });
         return { ok: true, id, kind: "image" };
     }
-    throw new Error("assets_add 仅支持 kind=text 或 kind=image");
+    throw new Error("assets_add only supports kind=text or kind=image");
 }
 
 function paginate(input: SiteToolInput, total: number, defaultSize: number) {

@@ -1,36 +1,36 @@
 ---
 name: open-canvas
-description: 打开 Infinite Canvas 网页画布并自动连接本地 Canvas Agent。用户要求打开、启动、进入、使用 Infinite Canvas 或画布时使用。
+description: Open the Infinite Canvas web canvas and auto-connect to the local Canvas Agent. Use when the user asks to open, start, enter, or use Infinite Canvas or the canvas.
 ---
 
 # Open Infinite Canvas
 
-当用户要求打开、启动、进入或使用 Infinite Canvas 时，不要把 URL 交给用户手动复制，不要通过浏览器点击“新建画布”。优先快速拉起本地画布和本地 Canvas Agent，然后直接打开带 `mode`、`agentUrl`、`agentToken` 的 URL，让网页自动创建或选择画布并连接 Agent。
+When the user asks to open, start, enter, or use Infinite Canvas, do not hand the URL to the user to copy manually, and do not click "New Canvas" in the browser. Prefer to quickly launch the local canvas and local Canvas Agent, then directly open the URL with `mode`, `agentUrl`, and `agentToken` so the web page auto-creates or selects a canvas and connects the Agent.
 
-## 默认打开方式
+## Default Opening Method
 
-- 新建画布：`<画布网页地址>/canvas?mode=new#agentUrl=<Local URL>&agentToken=<Connect token>`
-- 最近画布：`<画布网页地址>/canvas?mode=recent#agentUrl=<Local URL>&agentToken=<Connect token>`
-- 自己选择：`<画布网页地址>/canvas?mode=choose#agentUrl=<Local URL>&agentToken=<Connect token>`
+- New canvas: `<canvas-web-address>/canvas?mode=new#agentUrl=<Local URL>&agentToken=<Connect token>`
+- Recent canvas: `<canvas-web-address>/canvas?mode=recent#agentUrl=<Local URL>&agentToken=<Connect token>`
+- Choose: `<canvas-web-address>/canvas?mode=choose#agentUrl=<Local URL>&agentToken=<Connect token>`
 
-默认打开新建本地画布；只有用户明确要求线上地址、最近画布或自己选择时，才改用对应模式。
+Default opens a new local canvas; only switch to the corresponding mode when the user explicitly requests an online address, recent canvas, or manual selection.
 
-## 工作流
+## Workflow
 
-1. 如果当前仓库是 Infinite Canvas 项目，优先使用当前仓库的 `web/` 前端。
-2. 先检查本地端口归属：如果 `3000`、`3001` 等端口已被占用，必须用 `lsof`/`ps` 或服务输出确认监听进程的工作目录属于当前仓库的 `web/`，不能只因为端口存在就当成本地画布。
-3. 如果已有当前仓库的 Next dev 服务，复用它并记录真实画布地址，例如 `http://localhost:3001`。
-4. 如果没有当前仓库的服务，启动本地画布开发服务，默认在 `web/` 下运行 `bun run dev`；若默认端口被其他项目占用，改用空闲端口启动，例如 `bunx next dev --webpack -H 0.0.0.0 -p <空闲端口>`。不要执行构建或测试。
-5. 启动本地 Canvas Agent，必须带上第 3/4 步得到的真实画布地址：`CANVAS_URL=<真实画布地址> bun --cwd canvas-agent src/index.ts`。如果 Agent 已经在运行，则读取 `~/.infinite-canvas/canvas-agent.json` 或 `/config` 获取 `Local URL` 和 token。
-6. 读取 Agent 输出或配置中的 `Local URL` 和 `Connect token`，不要让用户手动复制。
-7. 不走本地 Agent 的 `/open` 跳转；直接构造并打开最终 URL：`<真实画布地址>/canvas?mode=new#agentUrl=<Local URL>&agentToken=<Connect token>`。
-8. 画布网页会自动新建具体画布、打开本机 Agent 面板并连接本地 Agent；不要用浏览器点击新建画布。
-9. 打开后再使用 `canvas_get_state` 检查画布是否已经连接；如果尚未连接，等待片刻再检查，不要改用线上站点，除非用户明确要求。
+1. If the current repo is the Infinite Canvas project, prefer using the current repo's `web/` frontend.
+2. First check local port ownership: if the default port `51309` is already occupied, you must use `lsof`/`ps` or service output to confirm the listening process's working directory belongs to the current repo's `web/`; do not treat it as the local canvas just because the port exists.
+3. If a Vite dev server for the current repo already exists, reuse it and record the real canvas address, e.g. `http://localhost:51309`.
+4. If no current repo service is running, start the local canvas dev server, default by running `bun run dev` under `web/`; if the default port is occupied by another project, start with a free port, e.g. `bunx vite --host 0.0.0.0 --port <free-port>`. Do not run builds or tests.
+5. Before starting the local Canvas Agent, if `canvas-agent/node_modules` does not exist, first run `bun install --cwd canvas-agent --frozen-lockfile --ignore-scripts`; do not rely on Bun runtime to auto-install; then run with the real canvas address from steps 3/4: `CANVAS_URL=<real-canvas-address> bun --cwd canvas-agent src/index.ts`. If the Agent is already running, read `~/.infinite-canvas/canvas-agent.json` or `/config` to get the `Local URL` and token.
+6. Read the `Local URL` and `Connect token` from the Agent output or config; do not ask the user to copy manually.
+7. Do not use the local Agent's `/open` redirect; directly construct and open the final URL: `<real-canvas-address>/canvas?mode=new#agentUrl=<Local URL>&agentToken=<Connect token>`.
+8. The canvas web page will auto-create a specific canvas, open the local Agent panel, and connect to the local Agent; do not use browser clicks to create a new canvas.
+9. After opening, use `canvas_get_state` to check whether the canvas is connected; if not yet connected, wait a moment and check again; do not switch to the online site unless the user explicitly requests it.
 
-## 用户只安装插件时
+## Plugin-Only Installation
 
-- 如果当前工作区不是 Infinite Canvas 源码仓库，优先提示用户先打开或启动 Infinite Canvas 网页，再连接本地 Agent。
-- 可以使用线上画布地址或用户给出的本地地址作为 `<画布网页地址>`，但仍要通过本地 Canvas Agent 获取 token 后再打开最终 URL。
-- 不要假设用户已经安装本仓库依赖；插件的 MCP 会通过 `npx -y @basketikun/canvas-agent@0.1.0 mcp` 使用已发布的 Canvas Agent。
+- If the current workspace is not the Infinite Canvas source repo, first prompt the user to open or start the Infinite Canvas web page, then connect to the local Agent.
+- You can use the online canvas address or a user-provided local address as `<canvas-web-address>`, but still obtain the token through the local Canvas Agent before opening the final URL.
+- Do not assume the user has installed this repo's dependencies; the plugin's MCP uses the published Canvas Agent via `npx -y @basketikun/canvas-agent@0.1.0 mcp`.
 
-不要要求用户手动填写 URL、token 或复制 JSON。
+Do not ask the user to manually fill in URLs, tokens, or copy JSON.

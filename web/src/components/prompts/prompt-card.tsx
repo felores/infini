@@ -8,7 +8,7 @@ export function PromptCard({
     item,
     onOpen,
     onCopy,
-    actionLabel = "复制",
+    actionLabel = "Copy",
     actionIcon = <Copy className="size-3.5" />,
     actionType = "text",
     extraAction,
@@ -28,7 +28,7 @@ export function PromptCard({
             styles={{ body: { padding: 0 } }}
             cover={
                 <button type="button" className="block w-full text-left" onClick={onOpen}>
-                    <img src={item.coverUrl} alt={item.title} className="aspect-[4/3] w-full object-cover" />
+                    <img src={item.coverUrl || undefined} alt={item.title} className="aspect-[4/3] w-full object-cover" />
                 </button>
             }
         >

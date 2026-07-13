@@ -30,7 +30,7 @@ export function summarizeCanvasAgentOps(ops?: CanvasAgentOp[]) {
     }, {});
     return Object.entries(counts)
         .map(([type, count]) => `${opLabel(type)} ${count}`)
-        .join("，");
+        .join(", ");
 }
 
 export function applyCanvasAgentOps(snapshot: CanvasAgentSnapshot, ops?: CanvasAgentOp[]) {
@@ -84,13 +84,13 @@ export function applyCanvasAgentOps(snapshot: CanvasAgentSnapshot, ops?: CanvasA
 }
 
 function opLabel(type: string) {
-    if (type === "add_node") return "新增节点";
-    if (type === "update_node") return "更新节点";
-    if (type === "delete_node") return "删除节点";
-    if (type === "delete_connections") return "删除连线";
-    if (type === "connect_nodes") return "连接";
-    if (type === "set_viewport") return "调整视图";
-    if (type === "select_nodes") return "选择节点";
-    if (type === "run_generation") return "触发生成";
+    if (type === "add_node") return "Add node";
+    if (type === "update_node") return "Update node";
+    if (type === "delete_node") return "Delete node";
+    if (type === "delete_connections") return "Delete connections";
+    if (type === "connect_nodes") return "Connect";
+    if (type === "set_viewport") return "Adjust viewport";
+    if (type === "select_nodes") return "Select nodes";
+    if (type === "run_generation") return "Run generation";
     return type;
 }

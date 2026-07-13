@@ -64,7 +64,7 @@ export const useCanvasStore = create<CanvasStore>()(
         (set, get) => ({
             hydrated: false,
             projects: [],
-            createProject: (title = "未命名画布") => {
+            createProject: (title = "Untitled Canvas") => {
                 const now = new Date().toISOString();
                 const id = nanoid();
                 const project: CanvasProject = {
@@ -87,7 +87,7 @@ export const useCanvasStore = create<CanvasStore>()(
                 const now = new Date().toISOString();
                 const project: CanvasProject = {
                     id: nanoid(),
-                    title: source.title || "导入画布",
+                    title: source.title || "Imported Canvas",
                     createdAt: source.createdAt || now,
                     updatedAt: now,
                     nodes: source.nodes || [],

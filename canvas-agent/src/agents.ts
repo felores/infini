@@ -22,7 +22,7 @@ const canvasAgentMcp = canvasAgentMcpCommand();
 const require = createRequire(import.meta.url);
 
 export function withAgentPrompt(prompt: string) {
-    return prompt.trim() ? `${AGENT_PROMPT}\n\n用户请求：${prompt}` : "";
+    return prompt.trim() ? `${AGENT_PROMPT}\n\nUser request: ${prompt}` : "";
 }
 
 export async function runCodexTurn(prompt: string, emit: AgentEmit, attachments: AgentAttachment[] = [], options: CodexRunOptions = {}) {
@@ -151,14 +151,22 @@ class CodexAppClient {
     static async start(emit: AgentEmit) {
         const child = spawn(process.execPath, [codexBin(), "app-server", "--stdio"], { stdio: ["pipe", "pipe", "pipe"], windowsHide: true });
         const client = new CodexAppClient(child, emit);
+        let stderr = "";
         child.stdout?.on("data", (chunk) => client.read(chunk.toString()));
-        child.stderr?.on("data", (chunk) => emit("agent_log", { text: chunk.toString() }));
+        child.stderr?.on("data", (chunk) => {
+            const text = redactAgentLog(chunk.toString());
+            stderr = `${stderr}${text}`.slice(-4096);
+            emit("agent_log", { text });
+        });
         child.on("error", (error) => emit("agent_error", { message: error.message }));
         child.on("exit", (code) => {
-            client.failAll(`Codex app-server exited: ${code ?? 0}`);
+            const message = [`Codex app-server exited: ${code ?? 0}`, stderr.trim()]
+                .filter(Boolean)
+                .join("\n");
+            client.failAll(message);
             codexApp = null;
             codexThreadId = "";
-            emit("agent_log", { text: `Codex app-server exited: ${code ?? 0}` });
+            emit("agent_log", { text: message });
         });
         await client.request("initialize", { clientInfo: { name: "canvas-agent", title: "Infinite Canvas Agent", version: VERSION }, capabilities: { experimentalApi: true, requestAttestation: false } });
         client.notify("initialized");
@@ -169,7 +177,7 @@ class CodexAppClient {
         const result = await this.request("thread/start", { approvalPolicy: "never", sandbox: "workspace-write", config: codexConfig(), ...(cwd ? { cwd } : {}), threadSource: "user" });
         const thread = field(result, "thread") as Json | undefined;
         const id = String(field(thread, "id") || "");
-        if (!id) throw new Error("Codex app-server 没有返回 thread id");
+        if (!id) throw new Error("Codex app-server did not return a thread id");
         return thread || {};
     }
 
@@ -177,7 +185,7 @@ class CodexAppClient {
         const result = await this.request("thread/resume", { threadId, approvalPolicy: "never", sandbox: "workspace-write", config: codexConfig(), ...(cwd ? { cwd } : {}) });
         const thread = field(result, "thread") as Json | undefined;
         const id = String(field(thread, "id") || "");
-        if (!id) throw new Error("Codex app-server 没有返回 thread id");
+        if (!id) throw new Error("Codex app-server did not return a thread id");
         return thread || {};
     }
 
@@ -196,7 +204,7 @@ class CodexAppClient {
     async startTurn(threadId: string, prompt: string, images: string[]) {
         const result = await this.request("turn/start", { threadId, input: codexInput(prompt, images), approvalPolicy: "never" });
         const turnId = String(field(field(result, "turn"), "id") || "");
-        if (!turnId) throw new Error("Codex app-server 没有返回 turn id");
+        if (!turnId) throw new Error("Codex app-server did not return a turn id");
         const completed = this.completedTurns.get(turnId);
         if (this.completedTurns.has(turnId)) {
             this.completedTurns.delete(turnId);
@@ -341,7 +349,7 @@ async function loadCodexThread(emit: AgentEmit, threadId: string, cwd: string | 
 
 function assertThreadWorkspace(thread: unknown, cwd?: string) {
     if (!cwd || threadInWorkspace(thread, cwd)) return;
-    throw new Error("该 Codex 会话不属于当前画布工作空间");
+    throw new Error("This Codex thread does not belong to the current canvas workspace");
 }
 
 function threadInWorkspace(thread: unknown, cwd: string) {
@@ -412,15 +420,15 @@ function threadMessages(thread: unknown): AgentHistoryMessage[] {
                 if (text) messages.push({ id, role: "assistant", title: "Codex", text, streamId: id });
             }
             if (type === "mcpToolCall") {
-                const tool = String(field(item, "tool") || "工具调用");
+                const tool = String(field(item, "tool") || "Tool call");
                 const error = field(field(item, "error"), "message");
-                messages.push({ id, role: error ? "error" : "tool", title: toolName(tool), text: error ? String(error) : `${toolName(tool)} ${String(field(item, "status") || "完成")}`, detail: item });
+                messages.push({ id, role: error ? "error" : "tool", title: toolName(tool), text: error ? String(error) : `${toolName(tool)} ${String(field(item, "status") || "completed")}`, detail: item });
             }
             if (type === "commandExecution") {
                 const command = String(field(item, "command") || "").trim();
-                if (command) messages.push({ id, role: "tool", title: "命令", text: command, detail: { cwd: field(item, "cwd"), status: field(item, "status"), exitCode: field(item, "exitCode") } });
+                if (command) messages.push({ id, role: "tool", title: "Command", text: command, detail: { cwd: field(item, "cwd"), status: field(item, "status"), exitCode: field(item, "exitCode") } });
             }
-            if (type === "fileChange") messages.push({ id, role: "tool", title: "文件变更", text: "Codex 修改了文件", detail: item });
+            if (type === "fileChange") messages.push({ id, role: "tool", title: "File change", text: "Codex modified files", detail: item });
         });
     });
     return messages.filter((item) => item.text).slice(-120);
@@ -431,8 +439,8 @@ function userInputText(content: unknown) {
         .map((item) => {
             const type = String(field(item, "type") || "");
             if (type === "text") return String(field(item, "text") || "");
-            if (type === "image" || type === "localImage") return "图片附件";
-            if (type === "mention") return `@${String(field(item, "name") || "文件")}`;
+            if (type === "image" || type === "localImage") return "Image attachment";
+            if (type === "mention") return `@${String(field(item, "name") || "file")}`;
             return "";
         })
         .filter(Boolean)
@@ -441,7 +449,7 @@ function userInputText(content: unknown) {
 
 function displayUserText(text: string) {
     const value = text.trim();
-    const marker = "用户请求：";
+    const marker = "User request: ";
     const index = value.lastIndexOf(marker);
     return (index >= 0 ? value.slice(index + marker.length) : value).trim();
 }
@@ -455,18 +463,18 @@ function stringOrNull(value: unknown) {
 }
 
 function toolName(name: string) {
-    if (name === "canvas_apply_ops") return "画布操作";
-    if (name === "canvas_get_state") return "读取画布";
-    if (name === "canvas_get_selection") return "读取选区";
-    if (name === "canvas_export_snapshot") return "导出快照";
-    if (name === "canvas_create_text_node") return "创建文本";
-    if (name === "canvas_create_image_prompt_flow") return "创建生图流程";
-    if (name === "canvas_create_generation_flow") return "创建生成流程";
-    if (name === "canvas_generate_text") return "生成文本";
-    if (name === "canvas_generate_image") return "生成图片";
-    if (name === "canvas_generate_video") return "生成视频";
-    if (name === "canvas_generate_audio") return "生成音频";
-    if (name === "canvas_run_generation") return "触发生成";
+    if (name === "canvas_apply_ops") return "Canvas ops";
+    if (name === "canvas_get_state") return "Read canvas";
+    if (name === "canvas_get_selection") return "Read selection";
+    if (name === "canvas_export_snapshot") return "Export snapshot";
+    if (name === "canvas_create_text_node") return "Create text";
+    if (name === "canvas_create_image_prompt_flow") return "Create image flow";
+    if (name === "canvas_create_generation_flow") return "Create generation flow";
+    if (name === "canvas_generate_text") return "Generate text";
+    if (name === "canvas_generate_image") return "Generate image";
+    if (name === "canvas_generate_video") return "Generate video";
+    if (name === "canvas_generate_audio") return "Generate audio";
+    if (name === "canvas_run_generation") return "Run generation";
     return name;
 }
 
@@ -476,7 +484,7 @@ async function writeAttachmentFiles(attachments: AgentAttachment[]) {
 
 async function writeAttachmentFile(item: AgentAttachment) {
     const [, meta = "", data = ""] = item.dataUrl?.match(/^data:([^;]+);base64,(.+)$/) || [];
-    if (!data) throw new Error(`图片附件无效：${item.name || "未命名图片"}`);
+    if (!data) throw new Error(`Invalid image attachment: ${item.name || "unnamed image"}`);
     const file = path.join(os.tmpdir(), `infinite-canvas-${Date.now()}-${Math.random().toString(16).slice(2)}.${imageExt(meta || item.type)}`);
     await fs.writeFile(file, Buffer.from(data, "base64"));
     return file;
@@ -506,7 +514,7 @@ function pipeJsonLines(child: ChildProcess, emit: AgentEmit, agent: string) {
             }
         });
     });
-    child.stderr?.on("data", (chunk) => emit("agent_log", { text: chunk.toString() }));
+    child.stderr?.on("data", (chunk) => emit("agent_log", { text: redactAgentLog(chunk.toString()) }));
     child.on("error", (error) => emit("agent_error", { message: error.message }));
     child.on("close", (code) => emit("agent_done", { agent, code }));
 }
@@ -522,4 +530,11 @@ function spawnAgent(name: string, args: string[], stdio: StdioOptions, emit: Age
 
 function errorMessage(error: unknown) {
     return error instanceof Error ? error.message : String(error);
+}
+
+export function redactAgentLog(text: string) {
+    return text
+        .replace(/(Bearer\s+)[A-Za-z0-9._~+/-]+=*/gi, "$1[REDACTED]")
+        .replace(/\bsk-[A-Za-z0-9_-]{8,}\b/g, "[REDACTED]")
+        .replace(/((?:api[_-]?key|token|authorization)\s*[:=]\s*)(?:"[^"]*"|'[^']*'|[^\s,;]+)/gi, "$1[REDACTED]");
 }

@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OMP Agent Steering Guide</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b1020;
+      --panel: #111a30;
+      --panel-strong: #172442;
+      --line: #2a3a60;
+      --text: #e6edf8;
+      --muted: #9eabc3;
+      --accent: #72d4ff;
+      --accent-strong: #2fa4d7;
+      --good: #74e0ad;
+      --warn: #ffc978;
+      --danger: #fa8994;
+      --code: #09101f;
+      --shadow: 0 18px 45px rgba(0, 0, 0, .28);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; background: radial-gradient(circle at 72% -20%, #163464 0, transparent 38%), var(--bg); color: var(--text); }
+    button, select, input { font: inherit; }
+    button { color: inherit; cursor: pointer; }
+    .shell { min-height: 100vh; display: grid; grid-template-columns: 270px minmax(0, 1fr); }
+    .sidebar { border-right: 1px solid var(--line); padding: 28px 18px; background: rgba(9, 15, 30, .78); position: sticky; top: 0; height: 100vh; }
+    .brand { font-size: 18px; font-weight: 760; letter-spacing: -.03em; }
+    .brand span { color: var(--accent); }
+    .eyebrow { margin: 8px 0 28px; color: var(--muted); font-size: 12px; line-height: 1.55; }
+    .nav { display: grid; gap: 7px; }
+    .nav button { width: 100%; text-align: left; border: 1px solid transparent; background: transparent; border-radius: 9px; padding: 11px 12px; color: var(--muted); }
+    .nav button:hover, .nav button.active { background: #16213b; border-color: #2b4674; color: var(--text); }
+    .nav small { display: block; margin-top: 3px; font-size: 11px; color: #8290aa; }
+    .sidebar-foot { position: absolute; bottom: 24px; left: 18px; right: 18px; color: #72809a; font-size: 11px; line-height: 1.5; }
+    main { min-width: 0; padding: 42px clamp(24px, 5vw, 82px) 80px; }
+    .view { display: none; max-width: 1250px; margin: 0 auto; animation: fade .24s ease both; }
+    .view.active { display: block; }
+    @keyframes fade { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    h1 { font-size: clamp(29px, 4vw, 46px); letter-spacing: -.055em; margin: 0; max-width: 900px; line-height: 1.05; }
+    h2 { font-size: 21px; letter-spacing: -.025em; margin: 0 0 12px; }
+    h3 { font-size: 15px; margin: 0 0 7px; }
+    p { color: var(--muted); line-height: 1.65; margin: 0 0 12px; }
+    .lead { font-size: 17px; max-width: 780px; margin: 17px 0 28px; }
+    .card { border: 1px solid var(--line); border-radius: 14px; padding: 21px; background: linear-gradient(145deg, rgba(23, 36, 66, .92), rgba(14, 23, 42, .88)); box-shadow: var(--shadow); }
+    .grid { display: grid; gap: 16px; }
+    .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .badge { display: inline-flex; align-items: center; gap: 7px; border: 1px solid #39547f; color: #b9dfff; background: #102341; border-radius: 999px; padding: 4px 9px; font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+    .badge.good { border-color: #2e7759; color: #a8ebc9; background: #112f28; }
+    .badge.warn { border-color: #76562d; color: #ffe0ab; background: #332514; }
+    .badge.danger { border-color: #72404d; color: #ffb8c0; background: #351b24; }
+    .notice { border-left: 3px solid var(--accent); background: rgba(30, 68, 112, .25); padding: 13px 15px; border-radius: 0 9px 9px 0; color: #c4dcf6; line-height: 1.55; font-size: 14px; }
+    .notice strong { color: #ecf5ff; }
+    .flow { margin: 28px 0; display: grid; grid-template-columns: minmax(120px, 1fr) 42px minmax(120px, 1fr) 42px minmax(120px, 1fr) 42px minmax(120px, 1fr); align-items: center; gap: 8px; }
+    .flow-node { min-height: 148px; border: 1px solid #35517d; background: #132342; border-radius: 13px; padding: 16px; }
+    .flow-node strong { display: block; margin: 9px 0 6px; font-size: 15px; }
+    .flow-node p { font-size: 12px; line-height: 1.45; margin: 0; }
+    .arrow { color: var(--accent); text-align: center; font-size: 25px; }
+    .flow-node:nth-child(5) { border-color: #436b59; background: #15342b; }
+    .flow-node:nth-child(7) { border-color: #6b5b39; background: #342a16; }
+    .principle { padding: 15px; border: 1px solid var(--line); border-radius: 10px; background: rgba(7, 13, 27, .3); }
+    .principle strong { display: block; font-size: 13px; margin-bottom: 5px; }
+    .principle p { font-size: 12px; line-height: 1.5; margin: 0; }
+    .profile-layout { grid-template-columns: 285px minmax(0, 1fr); align-items: start; }
+    .agent-list { padding: 8px; }
+    .agent-choice { width: 100%; text-align: left; background: transparent; border: 1px solid transparent; border-radius: 9px; padding: 11px; margin-bottom: 4px; }
+    .agent-choice:hover, .agent-choice.active { background: #182846; border-color: #345786; }
+    .agent-choice span { display: block; color: var(--text); font-weight: 680; font-size: 13px; }
+    .agent-choice small { display: block; color: var(--muted); margin-top: 3px; line-height: 1.35; }
+    .agent-editor { padding: 25px; }
+    .field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 18px; }
+    label { color: #b9c7dd; font-size: 12px; font-weight: 650; display: grid; gap: 7px; }
+    select, input { width: 100%; color: var(--text); border: 1px solid #365078; border-radius: 8px; background: #0c1629; padding: 10px; outline: none; }
+    select:focus, input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(114, 212, 255, .12); }
+    .tool-row { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 18px; }
+    .tool { font-size: 11px; color: #afc2df; border: 1px solid #365078; background: #102038; border-radius: 999px; padding: 5px 9px; }
+    .tool.readonly { color: #a7e8c6; border-color: #36725a; background: #112b25; }
+    .detail { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 17px; }
+    .detail p { font-size: 13px; }
+    .router { grid-template-columns: 350px minmax(0, 1fr); align-items: start; }
+    .control-card { display: grid; gap: 16px; }
+    .switch { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--line); padding-top: 14px; color: #cbd7e9; font-size: 13px; }
+    .switch input { width: 40px; accent-color: var(--accent-strong); }
+    .decision { min-height: 378px; display: grid; align-content: start; gap: 14px; }
+    .recommendation { border: 1px solid #397092; background: linear-gradient(135deg, #112f47, #12213d); padding: 20px; border-radius: 12px; }
+    .rec-name { font-size: 27px; font-weight: 800; letter-spacing: -.035em; color: #dcf3ff; }
+    .rec-meta { margin-top: 9px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .decision ul { padding-left: 19px; margin: 0; color: var(--muted); line-height: 1.6; font-size: 13px; }
+    .code-box { position: relative; border: 1px solid #283a5c; background: var(--code); border-radius: 11px; overflow: hidden; }
+    pre { margin: 0; padding: 19px; overflow: auto; color: #cddcf2; font: 12px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre-wrap; }
+    .copy { position: absolute; top: 10px; right: 10px; border: 1px solid #416895; background: #142b4a; padding: 6px 9px; border-radius: 7px; font-size: 11px; }
+    .copy:hover { background: #1c3a62; }
+    .output-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; }
+    .section-caption { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 31px 0 13px; }
+    .section-caption p { margin: 0; font-size: 13px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .table-card { padding: 0; overflow-x: auto; }
+    .table-card table { min-width: 720px; }
+    .table-card th:first-child, .table-card td:first-child { padding-left: 21px; }
+    .table-card th:last-child, .table-card td:last-child { padding-right: 21px; }
+    th, td { text-align: left; padding: 10px 9px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { color: #bcd6f2; font-weight: 700; }
+    td { color: var(--muted); line-height: 1.45; }
+    code { font: 11px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: #b9e7ff; }
+    .guardrail { border-top: 1px solid var(--line); padding: 14px 0; }
+    .guardrail:last-child { padding-bottom: 0; }
+    .guardrail h3 { display: flex; align-items: center; gap: 8px; }
+    .step-list { counter-reset: step; display: grid; gap: 12px; margin-top: 19px; }
+    .step { position: relative; padding: 15px 16px 15px 57px; border: 1px solid var(--line); border-radius: 10px; }
+    .step::before { counter-increment: step; content: counter(step); position: absolute; left: 16px; top: 14px; width: 27px; height: 27px; display: grid; place-items: center; border: 1px solid #3e6b93; color: var(--accent); border-radius: 50%; font-size: 12px; font-weight: 800; }
+    .step p { font-size: 12px; margin: 4px 0 0; }
+    @media (max-width: 940px) {
+      .shell { display: block; }
+      .sidebar { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); padding: 18px; }
+      .nav { grid-template-columns: repeat(2, 1fr); }
+      .sidebar-foot { display: none; }
+      main { padding: 30px 20px 56px; }
+      .flow { grid-template-columns: 1fr; }
+      .arrow { transform: rotate(90deg); }
+      .grid.two, .grid.three, .profile-layout, .router, .output-grid { grid-template-columns: 1fr; }
+      .field-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">OMP <span>Steering</span></div>
+      <p class="eyebrow">A practical map from OpenCode-style role routing to OMP model roles, task agents, and prompt policy.</p>
+      <nav class="nav" aria-label="Guide sections">
+        <button class="active" data-view="map">System map<small>What controls what</small></button>
+        <button data-view="profiles">Agent profiles<small>Model, effort, tools</small></button>
+        <button data-view="router">Routing lab<small>Simulate task selection</small></button>
+        <button data-view="generator">Config generator<small>Copy implementation files</small></button>
+        <button data-view="guardrails">Guardrails<small>What prompts cannot enforce</small></button>
+      </nav>
+      <p class="sidebar-foot">Offline artifact. No external libraries, network calls, or persistence.</p>
+    </aside>
+
+    <main>
+      <section id="map" class="view active">
+        <span class="badge">Core model</span>
+        <h1>OMP is steerable, but routing and model selection are different systems.</h1>
+        <p class="lead">Recreate your OpenCode governance by combining reusable model roles, named task-agent definitions, and a narrow routing policy appended to OMP's default system prompt.</p>
+        <div class="notice"><strong>Use <code>APPEND_SYSTEM.md</code> for routing policy.</strong> It keeps OMP's built-in tool, skill, workflow, and project-context guidance. <code>SYSTEM.md</code> replaces that stable block and is only appropriate when you intentionally own the complete base prompt.</div>
+
+        <div class="flow" aria-label="OMP steering flow">
+          <div class="flow-node"><span class="badge">1. Policy</span><strong>APPEND_SYSTEM.md</strong><p>Teaches the primary agent when to use a specialist and when not to delegate.</p></div>
+          <div class="arrow">→</div>
+          <div class="flow-node"><span class="badge">2. Selection</span><strong>Primary agent</strong><p>Chooses an exact task agent name from the discovered agent catalog.</p></div>
+          <div class="arrow">→</div>
+          <div class="flow-node"><span class="badge good">3. Specialist</span><strong>.omp/agents/*.md</strong><p>Defines the persona, permitted tools, optional model alias, and effort level.</p></div>
+          <div class="arrow">→</div>
+          <div class="flow-node"><span class="badge warn">4. Execution</span><strong>modelRoles</strong><p>Resolves aliases such as <code>pi/smol</code> and <code>pi/slow</code> to concrete models.</p></div>
+        </div>
+
+        <div class="grid three">
+          <div class="principle"><strong>Agent type is explicit</strong><p>OMP's task call contains one exact <code>agent</code> name. It is not a hidden classifier and does not route from a model role automatically.</p></div>
+          <div class="principle"><strong>Model roles are reusable profiles</strong><p><code>smol</code>, <code>task</code>, <code>slow</code>, <code>designer</code>, <code>advisor</code>, and custom tags select a model plus optional default effort.</p></div>
+          <div class="principle"><strong>Tool permissions are the boundary</strong><p>A prompt guides behavior. An agent's allowed tools make boundaries real, such as a verifier that can run checks but cannot edit code.</p></div>
+        </div>
+
+        <div class="section-caption"><div><h2>OpenCode to OMP mapping</h2><p>Same governance intent, separated into OMP's native layers.</p></div></div>
+        <div class="card table-card">
+          <table>
+            <thead><tr><th>OpenCode role</th><th>OMP agent type</th><th>OMP model alias</th><th>Recommended purpose</th></tr></thead>
+            <tbody>
+              <tr><td>orchestrator</td><td>Primary OMP session</td><td><code>default</code></td><td>Plan, choose agents, synthesize, make small low-risk changes.</td></tr>
+              <tr><td>executor</td><td><code>task</code> or <code>executor</code></td><td><code>pi/task</code></td><td>Implementation and focused verification under a complete assignment.</td></tr>
+              <tr><td>extractor</td><td><code>explore</code> or <code>extractor</code></td><td><code>pi/smol</code></td><td>Bounded retrieval, source tracing, quote-backed evidence.</td></tr>
+              <tr><td>verifier</td><td>custom <code>verifier</code></td><td><code>pi/smol</code></td><td>Deterministic commands and explicit acceptance checks, never semantic arbitration.</td></tr>
+              <tr><td>reviewer</td><td><code>reviewer</code></td><td><code>pi/slow</code></td><td>Correctness, security, feasibility, and ship/no-ship judgment.</td></tr>
+              <tr><td>designer</td><td><code>designer</code></td><td><code>pi/designer</code></td><td>UI/UX direction, visual critique, interaction design, frontend polish.</td></tr>
+              <tr><td>writer</td><td>custom <code>writer</code></td><td><code>pi/task</code></td><td>Docs, specifications, copy, prompts, and user-facing prose.</td></tr>
+              <tr><td>plan</td><td><code>plan</code></td><td><code>pi/slow</code></td><td>Architecture, design alternatives, implementation sequencing.</td></tr>
+              <tr><td>advisor</td><td>OMP advisor runtime</td><td><code>advisor</code></td><td>Optional post-turn critique when its recurring cost earns its keep.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="profiles" class="view">
+        <span class="badge">Capability profiles</span>
+        <h1>Predefine task profiles. Let routing select a profile, not mutate configuration mid-task.</h1>
+        <p class="lead">Select a profile to inspect its recommended OMP configuration. The model alias stays stable while you change the underlying concrete model in <code>/models</code>.</p>
+        <div class="grid profile-layout">
+          <div class="card agent-list" id="agentList"></div>
+          <div class="card agent-editor">
+            <div id="profileHeader"></div>
+            <div class="field-grid">
+              <label>Model alias<select id="profileModel"></select></label>
+              <label>Reasoning effort<select id="profileEffort"><option>minimal</option><option>low</option><option>medium</option><option>high</option><option>xhigh</option><option>max</option></select></label>
+            </div>
+            <div class="tool-row" id="profileTools"></div>
+            <div class="detail"><h3>Routing contract</h3><p id="profileContract"></p></div>
+            <div class="detail"><h3>Why this shape</h3><p id="profileWhy"></p></div>
+          </div>
+        </div>
+        <div class="notice" style="margin-top: 18px"><strong>Effort on the fly:</strong> <code>Shift+Tab</code> changes the primary session's reasoning level. Task invocations do not carry an ad hoc effort field. For subagents, choose a preconfigured agent profile with a fixed <code>thinkingLevel</code>, such as <code>verifier</code> at medium or <code>reviewer</code> at high.</div>
+      </section>
+
+      <section id="router" class="view">
+        <span class="badge">Routing simulator</span>
+        <h1>Choose a task shape. See the correct agent boundary.</h1>
+        <p class="lead">This simulates the routing rules that belong in <code>APPEND_SYSTEM.md</code>. It does not promise that a model will follow the policy perfectly. Tools and agent definitions enforce the important boundaries.</p>
+        <div class="grid router">
+          <div class="card control-card">
+            <label>Primary task<select id="taskKind">
+              <option value="evidence">Gather bounded evidence or trace code</option>
+              <option value="verify">Run deterministic checks</option>
+              <option value="implement">Implement a focused change</option>
+              <option value="review">Judge correctness, security, or shipping risk</option>
+              <option value="design">Create or critique UI/UX</option>
+              <option value="writing">Write documentation or user-facing copy</option>
+              <option value="plan">Decide architecture or implementation sequence</option>
+            </select></label>
+            <label>Risk / ambiguity<select id="taskRisk"><option value="low">Low and well specified</option><option value="medium" selected>Medium, several files or uncertainty</option><option value="high">High stakes or hard-to-reverse</option></select></label>
+            <label>Task size<select id="taskSize"><option value="small">Small, one file or one command</option><option value="medium" selected>Focused multi-step work</option><option value="large">Cross-cutting subsystem</option></select></label>
+            <div class="switch"><span>Requires source edits</span><input id="needsEdit" type="checkbox"></div>
+            <div class="switch"><span>Needs visual judgment</span><input id="needsVisual" type="checkbox"></div>
+          </div>
+          <div class="card decision">
+            <span class="badge good">Recommended route</span>
+            <div class="recommendation"><div class="rec-name" id="recAgent">extractor</div><div class="rec-meta" id="recMeta"></div></div>
+            <div><h3>Reasoning</h3><ul id="recReasons"></ul></div>
+            <div class="notice" id="recCaution"></div>
+          </div>
+        </div>
+        <div class="notice" style="margin-top: 18px"><strong>Batch boundary:</strong> one OMP <code>task</code> call has one agent type for every item in its <code>tasks[]</code> batch. A workflow needing extraction, review, and verification requires separate calls. The task item's <code>role</code> is a prompt identity and UI label, not an agent selector.</div>
+      </section>
+
+      <section id="generator" class="view">
+        <span class="badge">Generated configuration</span>
+        <h1>Use stable aliases, explicit specialists, and an appended routing policy.</h1>
+        <p class="lead">The generated files are a starting point. They preserve OMP's default prompt while adding the equivalent of your OpenCode role catalog and delegation rules.</p>
+        <div class="grid output-grid">
+          <div class="card"><h2>1. Model roles</h2><p>Place in <code>~/.omp/agent/config.yml</code>, or use <code>/models</code> to set these interactively.</p><div class="code-box"><button class="copy" data-copy="rolesOutput">Copy</button><pre id="rolesOutput"></pre></div></div>
+          <div class="card"><h2>2. Agent definition</h2><p>Place each custom file in <code>.omp/agents/</code> for this repo or <code>~/.omp/agent/agents/</code> for all projects.</p><div class="code-box"><button class="copy" data-copy="agentOutput">Copy</button><pre id="agentOutput"></pre></div></div>
+          <div class="card"><h2>3. Routing policy</h2><p>Place in <code>.omp/APPEND_SYSTEM.md</code> or globally in <code>~/.omp/agent/APPEND_SYSTEM.md</code>.</p><div class="code-box"><button class="copy" data-copy="promptOutput">Copy</button><pre id="promptOutput"></pre></div></div>
+        </div>
+        <div class="section-caption"><div><h2>Minimal rollout order</h2><p>Start with a few high-signal specialists. Add agents only when their boundaries are genuinely distinct.</p></div></div>
+        <div class="step-list">
+          <div class="step"><h3>Set model roles</h3><p>Configure <code>smol</code>, <code>task</code>, <code>slow</code>, <code>designer</code>, <code>plan</code>, and <code>advisor</code> in <code>/models</code>. Assign effort based on the job, not a generic price tier.</p></div>
+          <div class="step"><h3>Add only missing specialists</h3><p>Use bundled <code>explore</code>, <code>task</code>, <code>reviewer</code>, <code>designer</code>, and <code>plan</code> first. Add custom <code>verifier</code>, <code>writer</code>, or <code>extractor</code> only where their tool boundary adds value.</p></div>
+          <div class="step"><h3>Append the routing policy</h3><p>Write concise scenario rules in <code>APPEND_SYSTEM.md</code>. Do not turn it into a long rigid workflow that blocks simple, direct work.</p></div>
+          <div class="step"><h3>Measure signal</h3><p>Keep an agent only when it improves a real decision, catches defects, or saves meaningful context. Remove noisy profiles and disable advisor if its every-turn review does not earn its cost.</p></div>
+        </div>
+      </section>
+
+      <section id="guardrails" class="view">
+        <span class="badge danger">Important limits</span>
+        <h1>Prompts steer. Definitions and tools enforce.</h1>
+        <p class="lead">The reliable OMP system is not a giant supervisor prompt. It is small policy text backed by explicit agent definitions, constrained tools, and focused task assignments.</p>
+        <div class="card">
+          <div class="guardrail"><h3><span class="badge danger">Cannot</span> A model role choose an agent</h3><p><code>modelRoles.task</code> determines a model profile for generic task work. It cannot mean “run verifier when tests are needed.” The primary agent must explicitly select <code>agent: "verifier"</code>.</p></div>
+          <div class="guardrail"><h3><span class="badge danger">Cannot</span> A system prompt reliably forbid a tool</h3><p>Use the agent definition's tool list. A read-only reviewer should not have <code>edit</code> or <code>write</code>; a verifier may have <code>bash</code> for focused checks but no editing tools.</p></div>
+          <div class="guardrail"><h3><span class="badge danger">Cannot</span> Mix agent types inside one task batch</h3><p>A batch has one <code>agent</code> field. Split workflows into separate calls when the work crosses capability boundaries.</p></div>
+          <div class="guardrail"><h3><span class="badge warn">Careful</span> Overriding a bundled agent replaces it</h3><p>Project agent discovery wins over user, plugin, and bundled definitions by exact name. If you define <code>reviewer</code>, you replace its entire bundled prompt and tool policy. Prefer a new name such as <code>deep-reviewer</code> unless you intend to maintain that override.</p></div>
+          <div class="guardrail"><h3><span class="badge good">Use</span> Agent profiles as capability contracts</h3><p>Write assignments that name the required output, constraints, files, non-goals, and verification. The profile decides model, effort, and tool boundary. The assignment decides the actual work.</p></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const roles = {
+      smol: 'openai-codex/gpt-5.6-luna:low',
+      default: 'openai-codex/gpt-5.6-terra:low',
+      task: 'deepseek/deepseek-v4-pro:medium',
+      slow: 'openai-codex/gpt-5.6-sol:xhigh',
+      designer: 'zai/glm-5.2:max',
+      plan: 'openai-codex/gpt-5.6-sol:xhigh',
+      advisor: 'openai-codex/gpt-5.6-sol:medium'
+    };
+
+    const profiles = [
+      { id: 'extractor', title: 'Extractor', alias: 'pi/smol', effort: 'low', tools: ['read', 'grep', 'glob', 'lsp', 'web_search', 'yield'], readOnly: true, contract: 'Bounded retrieval only: trace, quote, inventory, and return evidence. Do not decide whether a design is correct.', why: 'Cheap context gathering prevents an expensive reasoning model from spending its window on locating facts.' },
+      { id: 'verifier', title: 'Verifier', alias: 'pi/smol', effort: 'medium', tools: ['read', 'grep', 'glob', 'bash', 'yield'], readOnly: true, contract: 'Run narrow deterministic checks and confirm explicit criteria. Return commands, output, and failures. Do not make semantic ship decisions.', why: 'Test execution and output parsing are usually bounded. The separate profile prevents verification from turning into a vague code review.' },
+      { id: 'executor', title: 'Executor', alias: 'pi/task', effort: 'medium', tools: ['read', 'grep', 'glob', 'lsp', 'edit', 'write', 'bash', 'yield'], readOnly: false, contract: 'Implement a self-contained change with direct acceptance criteria. Preserve unrelated work and run focused verification.', why: 'Implementation needs real file and command access, plus enough reasoning to maintain local invariants.' },
+      { id: 'reviewer', title: 'Reviewer', alias: 'pi/slow', effort: 'high', tools: ['read', 'grep', 'glob', 'lsp', 'yield'], readOnly: true, contract: 'Find concrete correctness, security, feasibility, and shipping risks. Cite exact evidence. Do not edit.', why: 'Semantic judgment has asymmetric cost. Use a stronger model but reserve it for meaningful review gates.' },
+      { id: 'designer', title: 'Designer', alias: 'pi/designer', effort: 'high', tools: ['read', 'grep', 'glob', 'browser', 'generate_image', 'edit', 'write', 'yield'], readOnly: false, contract: 'Own UI/UX direction, visual hierarchy, interaction design, and frontend polish. Validate visually when a running app exists.', why: 'Visual work benefits from a model and toolset chosen for design judgment rather than generic implementation.' },
+      { id: 'writer', title: 'Writer', alias: 'pi/task', effort: 'medium', tools: ['read', 'grep', 'glob', 'edit', 'write', 'yield'], readOnly: false, contract: 'Write clear docs, specifications, prompts, and user-facing copy. Preserve technical truth and requested voice.', why: 'Writing needs a different quality bar from code execution but rarely needs the most expensive reasoning tier.' },
+      { id: 'planner', title: 'Planner', alias: 'pi/slow', effort: 'xhigh', tools: ['read', 'grep', 'glob', 'lsp', 'web_search', 'yield'], readOnly: true, contract: 'Compare alternatives, expose dependencies, make explicit trade-offs, and return an executable implementation sequence.', why: 'Architecture and uncertain requirements benefit from broader search and deeper reasoning before any mutation begins.' },
+      { id: 'advisor', title: 'Advisor', alias: 'advisor', effort: 'medium', tools: ['read', 'grep', 'glob', 'advise'], readOnly: true, contract: 'After a turn, identify only concise, decision-relevant omissions, risks, or corrective actions. Do not act as a second executor.', why: 'It runs recurrently. Keep it cheaper than a high-stakes reviewer unless evidence proves a stronger advisor pays for itself.' }
+    ];
+
+    let activeProfile = 'extractor';
+    const agentList = document.getElementById('agentList');
+    const profileHeader = document.getElementById('profileHeader');
+    const profileModel = document.getElementById('profileModel');
+    const profileEffort = document.getElementById('profileEffort');
+    const profileTools = document.getElementById('profileTools');
+    const profileContract = document.getElementById('profileContract');
+    const profileWhy = document.getElementById('profileWhy');
+
+    const aliases = ['pi/smol', 'pi/default', 'pi/task', 'pi/slow', 'pi/designer', 'pi/plan', 'advisor'];
+    profileModel.innerHTML = aliases.map(a => `<option value="${a}">${a}</option>`).join('');
+
+    function getProfile() { return profiles.find(p => p.id === activeProfile); }
+    function renderProfiles() {
+      agentList.innerHTML = profiles.map(p => `<button class="agent-choice ${p.id === activeProfile ? 'active' : ''}" data-profile="${p.id}"><span>${p.title}</span><small>${p.alias} · ${p.effort}</small></button>`).join('');
+      agentList.querySelectorAll('[data-profile]').forEach(btn => btn.addEventListener('click', () => { activeProfile = btn.dataset.profile; renderProfiles(); updateGenerated(); }));
+      const p = getProfile();
+      profileHeader.innerHTML = `<span class="badge ${p.readOnly ? 'good' : ''}">${p.readOnly ? 'Read-only' : 'Can mutate workspace'}</span><h2 style="margin-top: 13px">${p.title}</h2><p>Named capability profile. The assignment describes the work; this definition constrains how the work is done.</p>`;
+      profileModel.value = p.alias;
+      profileEffort.value = p.effort;
+      profileTools.innerHTML = p.tools.map(t => `<span class="tool ${p.readOnly ? 'readonly' : ''}">${t}</span>`).join('');
+      profileContract.textContent = p.contract;
+      profileWhy.textContent = p.why;
+    }
+    profileModel.addEventListener('change', () => { getProfile().alias = profileModel.value; renderProfiles(); updateGenerated(); });
+    profileEffort.addEventListener('change', () => { getProfile().effort = profileEffort.value; renderProfiles(); updateGenerated(); });
+
+    document.querySelectorAll('.nav button').forEach(btn => btn.addEventListener('click', () => {
+      document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      btn.classList.add('active'); document.getElementById(btn.dataset.view).classList.add('active');
+    }));
+
+    function routeTask() {
+      const kind = document.getElementById('taskKind').value;
+      const risk = document.getElementById('taskRisk').value;
+      const size = document.getElementById('taskSize').value;
+      const edit = document.getElementById('needsEdit').checked;
+      const visual = document.getElementById('needsVisual').checked;
+      let id = { evidence: 'extractor', verify: 'verifier', implement: 'executor', review: 'reviewer', design: 'designer', writing: 'writer', plan: 'planner' }[kind];
+      if (visual) id = 'designer';
+      if (kind === 'implement' && risk === 'high' && size === 'large') id = 'planner';
+      if (kind === 'review' && edit) id = 'executor';
+      const p = profiles.find(x => x.id === id);
+      document.getElementById('recAgent').textContent = p.title;
+      document.getElementById('recMeta').innerHTML = `<span class="badge">${p.alias}</span><span class="badge">${p.effort}</span><span class="badge ${p.readOnly ? 'good' : 'warn'}">${p.readOnly ? 'Read-only' : 'Can edit'}</span>`;
+      const reasons = [];
+      reasons.push(p.contract);
+      reasons.push(risk === 'high' ? 'High risk merits a strict scope and a stronger judgment boundary.' : 'The requested risk level does not justify an unnecessary heavyweight profile.');
+      reasons.push(size === 'small' && id !== 'planner' ? 'For a truly small task, keep the assignment focused and skip delegation if the overhead exceeds the work.' : 'Use a complete assignment with files, non-goals, and acceptance criteria.');
+      document.getElementById('recReasons').innerHTML = reasons.map(r => `<li>${r}</li>`).join('');
+      let caution = id === 'verifier' ? '<strong>Do not promote this to a code reviewer.</strong> A passing command does not prove the design is correct.' : id === 'extractor' ? '<strong>Do not ask this agent to arbitrate.</strong> Return evidence first, then give it to a planner, reviewer, or executor.' : id === 'planner' ? '<strong>Planning is read-only.</strong> Hand implementation to executor after the plan is accepted.' : id === 'advisor' ? '<strong>Advisor is recurring.</strong> Its model must earn its cost by catching real issues, not repeating routine guidance.' : '<strong>Scope is the control.</strong> Keep a specialist assignment complete and narrow so the selected capability profile remains appropriate.';
+      document.getElementById('recCaution').innerHTML = caution;
+    }
+    ['taskKind', 'taskRisk', 'taskSize', 'needsEdit', 'needsVisual'].forEach(id => document.getElementById(id).addEventListener('change', routeTask));
+
+    function esc(text) { return text.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])); }
+    function makeAgent(p) {
+      const tools = p.tools.join(', ');
+      return `---\nname: ${p.id}\ndescription: ${p.contract}\nmodel: ${p.alias}\nthinkingLevel: ${p.effort}\ntools: ${tools}\n---\n\nYou are the ${p.title.toLowerCase()} specialist.\n\n${p.contract}\n\nReturn concise, evidence-backed results. Preserve unrelated user work.`;
+    }
+    function updateGenerated() {
+      const roleText = `modelRoles:\n  smol: ${roles.smol}\n  default: ${roles.default}\n  task: ${roles.task}\n  slow: ${roles.slow}\n  designer: ${roles.designer}\n  plan: ${roles.plan}\n  advisor: ${roles.advisor}\n\nadvisor:\n  enabled: true`;
+      const selected = getProfile();
+      const prompt = `# Delegation policy\n\nChoose agents by capability and risk, not by price tier.\n\n- Use extractor for bounded evidence gathering, tracing, and quote-backed context.\n- Use verifier only for deterministic, observable checks. Do not ask it to judge semantic correctness.\n- Use executor for focused implementation and verification work.\n- Use designer for UI/UX direction, visual judgment, and frontend polish.\n- Use reviewer for correctness, security, feasibility, and ship/no-ship judgment.\n- Use planner for architecture, high ambiguity, or cross-cutting implementation sequencing.\n- Use advisor only when stuck, uncertain, or deciding a consequential trade-off.\n- Do not delegate simple, low-risk work when delegation costs more than the change.\n- For mixed-specialty work, make separate task calls. A task batch has one agent type.`;
+      document.getElementById('rolesOutput').textContent = roleText;
+      document.getElementById('agentOutput').textContent = makeAgent(selected);
+      document.getElementById('promptOutput').textContent = prompt;
+    }
+
+    document.querySelectorAll('.copy').forEach(btn => btn.addEventListener('click', async () => {
+      const text = document.getElementById(btn.dataset.copy).textContent;
+      try { await navigator.clipboard.writeText(text); btn.textContent = 'Copied'; setTimeout(() => btn.textContent = 'Copy', 1000); }
+      catch { btn.textContent = 'Select text'; setTimeout(() => btn.textContent = 'Copy', 1500); }
+    }));
+
+    renderProfiles(); routeTask(); updateGenerated();
+  </script>
+</body>
+</html>

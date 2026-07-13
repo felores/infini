@@ -19,7 +19,7 @@ type PromptCategory = {
     build: () => Promise<Omit<Prompt, "category" | "githubUrl">[]>;
 };
 
-export const ALL_PROMPTS_OPTION = "全部";
+export const ALL_PROMPTS_OPTION = "All";
 
 export type PromptListResponse = {
     items: Prompt[];
@@ -48,7 +48,7 @@ const categories: PromptCategory[] = [
 let loadingPrompts: Promise<Prompt[]> | null = null;
 
 export async function fetchPrompts({ keyword = "", tag = [], category = ALL_PROMPTS_OPTION, page = 1, pageSize = 20 }: { keyword?: string; tag?: string[]; category?: string; page?: number; pageSize?: number } = {}) {
-    const items = await getPrompts();
+    const items = (await getPrompts()).map((item) => ({ ...item, tags: uniquePromptTags(item.tags) }));
     const normalizedKeyword = keyword.trim().toLowerCase();
     const normalizedPage = Math.max(1, page);
     const normalizedPageSize = Math.max(1, Math.min(100, pageSize));
@@ -61,6 +61,10 @@ export async function fetchPrompts({ keyword = "", tag = [], category = ALL_PROM
         categories: categories.map((item) => item.category),
         total: filtered.length,
     };
+}
+
+export function uniquePromptTags(tags: string[]) {
+    return Array.from(new Set(tags));
 }
 
 async function getPrompts() {
@@ -160,7 +164,7 @@ function defaultPrompt(id: string, title: string, prompt: string, coverUrl: stri
 
 async function fetchText(baseUrl: string, file: string) {
     const response = await fetch(`${baseUrl}/${file}`, { cache: "no-store" });
-    if (!response.ok) throw new Error(`${file} 拉取失败`);
+    if (!response.ok) throw new Error(`Failed to fetch ${file}`);
     return response.text();
 }
 
@@ -211,7 +215,7 @@ function youMindTags(title: string, modelTag: string) {
 
 function davidWuTags(item: { category_cn?: string; category?: string; author?: string; source?: string; needs_ref?: boolean }) {
     const tags = splitTags([item.category_cn, item.category, item.author, item.source].filter(Boolean).join("/"), /\//);
-    if (item.needs_ref) tags.push("需要参考图");
+    if (item.needs_ref) tags.push("Reference image required");
     return tags;
 }
 
@@ -235,10 +239,10 @@ function leftPad(value: number) {
 }
 
 function isActiveOption(value: string) {
-    return value && value !== "全部" && value !== "all";
+    return value && value !== "All" && value !== "all";
 }
 
 export function formatPromptDate(value: string) {
     const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? "" : new Intl.DateTimeFormat("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit" }).format(date);
+    return Number.isNaN(date.getTime()) ? "" : new Intl.DateTimeFormat("en-US", { year: "numeric", month: "2-digit", day: "2-digit" }).format(date);
 }

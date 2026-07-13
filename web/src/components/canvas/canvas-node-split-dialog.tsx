@@ -87,8 +87,8 @@ export function CanvasNodeSplitDialog({ dataUrl, open, onClose, onConfirm }: { d
         <Modal title={null} open={open && Boolean(dataUrl)} onCancel={onClose} footer={null} width={780} centered destroyOnHidden>
             <div className="space-y-5">
                 <div>
-                    <h2 className="text-xl font-semibold">切分图片</h2>
-                    <p className="mt-1 text-sm opacity-60">生成 {total} 个图片子节点，并按原图网格排列到画布右侧</p>
+                    <h2 className="text-xl font-semibold">Split Image</h2>
+                    <p className="mt-1 text-sm opacity-60">Generate {total} child image nodes and arrange them in a grid to the right of the canvas</p>
                 </div>
                 <div className="grid gap-6 md:grid-cols-[minmax(260px,1fr)_280px]">
                     <div className="rounded-xl border p-4">
@@ -99,31 +99,31 @@ export function CanvasNodeSplitDialog({ dataUrl, open, onClose, onConfirm }: { d
                             </div>
                         </div>
                         <div className="mt-3 flex items-center justify-between text-sm">
-                            <span className="opacity-60">原图</span>
-                            <span className="font-semibold">{image ? `${image.width} x ${image.height} px` : "读取中"}</span>
+                            <span className="opacity-60">original image</span>
+                            <span className="font-semibold">{image ? `${image.width} x ${image.height} px` : "Loading"}</span>
                         </div>
                     </div>
                     <div className="space-y-5 py-2">
-                        <NumberField label="行数" value={rows} onChange={(value) => update("rows", value)} />
-                        <NumberField label="列数" value={columns} onChange={(value) => update("columns", value)} />
+                        <NumberField label="Rows" value={rows} onChange={(value) => update("rows", value)} />
+                        <NumberField label="Columns" value={columns} onChange={(value) => update("columns", value)} />
                         <div className="grid grid-cols-2 gap-2">
-                            <Button icon={<Rows3 className="size-4" />} onClick={() => addLine("horizontal")}>横向线</Button>
-                            <Button icon={<PanelTop className="size-4 rotate-90" />} onClick={() => addLine("vertical")}>纵向线</Button>
-                            <Button icon={<Trash2 className="size-4" />} disabled={!active} onClick={deleteLine}>删除线</Button>
-                            <Button icon={<ListRestart className="size-4" />} onClick={resetLines}>重置线</Button>
+                            <Button icon={<Rows3 className="size-4" />} onClick={() => addLine("horizontal")}>Horizontal line</Button>
+                            <Button icon={<PanelTop className="size-4 rotate-90" />} onClick={() => addLine("vertical")}>Vertical line</Button>
+                            <Button icon={<Trash2 className="size-4" />} disabled={!active} onClick={deleteLine}>Delete line</Button>
+                            <Button icon={<ListRestart className="size-4" />} onClick={resetLines}>Reset lines</Button>
                         </div>
                         <div className="rounded-xl border px-4 py-3 text-sm">
                             <div className="flex items-center justify-between">
-                                <span className="opacity-60">切片数量</span>
-                                <span className="font-semibold">{total} 个</span>
+                                <span className="opacity-60">slice count</span>
+                                <span className="font-semibold">{total} </span>
                             </div>
                             <div className="mt-2 flex items-center justify-between">
-                                <span className="opacity-60">平均约</span>
-                                <span className="font-semibold">{pieceSize ? `${pieceSize.width} x ${pieceSize.height}` : "未知"}</span>
+                                <span className="opacity-60">Average ~</span>
+                                <span className="font-semibold">{pieceSize ? `${pieceSize.width} x ${pieceSize.height}` : "Unknown"}</span>
                             </div>
                         </div>
                         <Button type="primary" size="large" className="w-full" icon={<Grid2x2 className="size-4" />} onClick={() => onConfirm(confirmParams)}>
-                            生成子节点
+                            Generate child nodes
                         </Button>
                     </div>
                 </div>

@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Infini connectivity map</title>
+  <script>
+    (() => {
+      const saved = localStorage.getItem("infini-connectivity-theme");
+      const dark = saved ? saved === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+      document.documentElement.classList.toggle("dark", dark);
+    })();
+  </script>
+  <style>
+    :root {
+      --bg: #f4f1e9;
+      --paper: #fffdf8;
+      --ink: #19201d;
+      --muted: #66706b;
+      --line: #d8d5cb;
+      --soft: #ebe7dd;
+      --accent: #e15a3d;
+      --accent-soft: #f8ded5;
+      --blue: #276f84;
+      --blue-soft: #dcecf0;
+      --green: #3d7657;
+      --green-soft: #dce9df;
+      --amber: #946525;
+      --amber-soft: #f3e6c9;
+      --red: #a34236;
+      --red-soft: #f2d9d4;
+      --shadow: 0 18px 55px rgba(30, 35, 30, .08);
+      --serif: Georgia, "Times New Roman", serif;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    }
+    html.dark {
+      --bg: #111513;
+      --paper: #191e1b;
+      --ink: #edf1ec;
+      --muted: #a8b1ab;
+      --line: #343b37;
+      --soft: #242b27;
+      --accent: #f1795c;
+      --accent-soft: #432921;
+      --blue: #7ec4d8;
+      --blue-soft: #19343d;
+      --green: #8bc4a1;
+      --green-soft: #20382a;
+      --amber: #e2b66e;
+      --amber-soft: #3d3020;
+      --red: #ef8b7f;
+      --red-soft: #422723;
+      --shadow: 0 20px 60px rgba(0, 0, 0, .3);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); line-height: 1.55; }
+    button, a { font: inherit; }
+    a { color: var(--blue); }
+    code, .mono { font-family: var(--mono); font-size: .92em; }
+    .shell { display: grid; grid-template-columns: 250px minmax(0, 1fr); min-height: 100vh; }
+    .rail { position: sticky; top: 0; height: 100vh; padding: 26px 20px; border-right: 1px solid var(--line); background: color-mix(in srgb, var(--paper) 92%, transparent); }
+    .brand { display: flex; align-items: center; gap: 11px; margin-bottom: 28px; }
+    .brand-mark { display: grid; place-items: center; width: 36px; height: 36px; border: 1px solid var(--line); border-radius: 11px; background: var(--ink); color: var(--paper); font: 700 14px var(--mono); }
+    .brand strong { display: block; font-size: 14px; }
+    .brand span { display: block; color: var(--muted); font: 10px var(--mono); text-transform: uppercase; letter-spacing: .08em; }
+    nav { display: grid; gap: 5px; }
+    nav a { padding: 8px 10px; border-radius: 8px; color: var(--muted); text-decoration: none; font-size: 13px; }
+    nav a:hover, nav a.active { background: var(--soft); color: var(--ink); }
+    .rail-foot { position: absolute; left: 20px; right: 20px; bottom: 22px; }
+    .theme { width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 9px; background: var(--paper); color: var(--ink); cursor: pointer; }
+    main { width: min(1180px, calc(100% - 48px)); margin: 0 auto; padding: 60px 0 100px; }
+    .eyebrow { color: var(--accent); font: 700 11px var(--mono); letter-spacing: .1em; text-transform: uppercase; }
+    h1, h2, h3 { margin-top: 0; color: var(--ink); }
+    h1 { max-width: 850px; margin: 14px 0 18px; font: 500 clamp(38px, 6vw, 72px)/.98 var(--serif); letter-spacing: -.035em; }
+    h2 { margin-bottom: 8px; font: 500 clamp(26px, 3vw, 38px)/1.1 var(--serif); letter-spacing: -.02em; }
+    h3 { margin-bottom: 8px; font-size: 16px; }
+    .lead { max-width: 760px; color: var(--muted); font-size: 17px; }
+    .meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 25px; }
+    .pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 9px; border: 1px solid var(--line); border-radius: 999px; background: var(--paper); color: var(--muted); font: 11px var(--mono); }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+    section { scroll-margin-top: 24px; margin-top: 78px; }
+    .section-intro { max-width: 760px; margin: 0 0 24px; color: var(--muted); }
+    .verdict { display: grid; grid-template-columns: 1.2fr .8fr; gap: 18px; margin-top: 36px; }
+    .card { border: 1px solid var(--line); border-radius: 16px; background: var(--paper); box-shadow: var(--shadow); }
+    .card-pad { padding: 24px; }
+    .callout { padding: 22px 24px; border-left: 5px solid var(--accent); }
+    .callout strong { display: block; margin-bottom: 6px; }
+    .status-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .status-card { padding: 18px; box-shadow: none; }
+    .status-card .k { margin-bottom: 7px; color: var(--muted); font: 10px var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+    .status-card .v { font-weight: 700; }
+    .status-card p { margin: 7px 0 0; color: var(--muted); font-size: 12px; }
+    .map { overflow-x: auto; padding: 30px; }
+    .map svg { display: block; min-width: 880px; width: 100%; height: auto; }
+    .map .box { fill: var(--paper); stroke: var(--line); stroke-width: 1.5; rx: 12; }
+    .map .browser { fill: var(--blue-soft); stroke: var(--blue); }
+    .map .agent { fill: var(--green-soft); stroke: var(--green); }
+    .map .external { fill: var(--amber-soft); stroke: var(--amber); }
+    .map .risk { fill: var(--red-soft); stroke: var(--red); }
+    .map text { fill: var(--ink); font-family: var(--mono); font-size: 12px; }
+    .map .small { fill: var(--muted); font-size: 10px; }
+    .map .edge { fill: none; stroke: var(--muted); stroke-width: 1.5; marker-end: url(#arrow); }
+    .map .dash { stroke-dasharray: 5 5; }
+    .map .node { cursor: pointer; }
+    .map .node:hover .box, .map .node.active .box { stroke: var(--accent); stroke-width: 2.5; }
+    .detail { margin-top: 14px; min-height: 90px; padding: 18px 20px; border: 1px solid var(--line); border-radius: 12px; background: var(--soft); }
+    .detail strong { font-family: var(--mono); }
+    .detail p { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+    .sequence { display: grid; gap: 0; }
+    .step { display: grid; grid-template-columns: 54px minmax(0, 1fr); gap: 16px; }
+    .step-mark { display: flex; flex-direction: column; align-items: center; }
+    .step-num { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--ink); color: var(--paper); font: 700 12px var(--mono); }
+    .step-line { width: 1px; min-height: 46px; flex: 1; background: var(--line); }
+    .step:last-child .step-line { display: none; }
+    .step-body { padding: 5px 0 28px; }
+    .step-body p { margin: 6px 0; color: var(--muted); }
+    .refs { color: var(--muted); font: 11px/1.5 var(--mono); }
+    .matrix { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 13px 15px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { background: var(--soft); color: var(--muted); font: 700 10px var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+    tr:last-child td { border-bottom: 0; }
+    .badge { display: inline-block; padding: 3px 7px; border-radius: 6px; font: 10px var(--mono); }
+    .yes { background: var(--green-soft); color: var(--green); }
+    .partial { background: var(--amber-soft); color: var(--amber); }
+    .no { background: var(--red-soft); color: var(--red); }
+    .tabs { display: flex; gap: 6px; margin-bottom: 14px; padding: 5px; border: 1px solid var(--line); border-radius: 12px; background: var(--soft); width: fit-content; }
+    .tab { padding: 7px 12px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); cursor: pointer; }
+    .tab.active { background: var(--paper); color: var(--ink); box-shadow: 0 3px 12px rgba(0,0,0,.08); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    .code { overflow-x: auto; padding: 18px 20px; border-radius: 12px; background: #161b19; color: #e7ede8; font: 12px/1.65 var(--mono); white-space: pre; }
+    .plan-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .plan { position: relative; padding: 20px; box-shadow: none; }
+    .plan.recommended { border-color: var(--green); }
+    .plan .rank { color: var(--accent); font: 700 10px var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+    .plan p { color: var(--muted); font-size: 13px; }
+    .plan ul { padding-left: 17px; color: var(--muted); font-size: 13px; }
+    .sources { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .source { padding: 14px 16px; box-shadow: none; }
+    .source code { display: block; color: var(--ink); overflow-wrap: anywhere; }
+    .source span { color: var(--muted); font-size: 12px; }
+    .risk-list { display: grid; gap: 10px; }
+    .risk-row { display: grid; grid-template-columns: 100px minmax(0, 1fr); gap: 14px; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); }
+    .risk-row strong { font: 700 11px var(--mono); color: var(--red); }
+    footer { margin-top: 80px; padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+    @media (max-width: 880px) {
+      .shell { display: block; }
+      .rail { position: relative; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      .rail nav { display: none; }
+      .rail-foot { position: static; display: block; margin-top: 14px; }
+      main { width: min(100% - 28px, 760px); padding-top: 38px; }
+      .verdict, .plan-grid, .sources { grid-template-columns: 1fr; }
+      .status-grid { grid-template-columns: 1fr; }
+    }
+    @media print {
+      .rail { display: none; }
+      .shell { display: block; }
+      main { width: 100%; padding: 0; }
+      .card { box-shadow: none; break-inside: avoid; }
+      section { break-inside: auto; }
+    }
+  </style>
+</head>
+<body>
+<div class="shell">
+  <aside class="rail">
+    <div class="brand"><div class="brand-mark">IC</div><div><strong>Infini</strong><span>Connectivity map</span></div></div>
+    <nav>
+      <a href="#verdict">Verdict</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#runtime">Runtime sequence</a>
+      <a href="#interfaces">Interfaces</a>
+      <a href="#kie">KIE adapter</a>
+      <a href="#sinapso">Sinapso reuse</a>
+      <a href="#enhancements">Enhancement order</a>
+      <a href="#sources">Evidence</a>
+    </nav>
+    <div class="rail-foot"><button class="theme" id="theme" type="button">Toggle light / dark</button></div>
+  </aside>
+
+  <main>
+    <header>
+      <div class="eyebrow">System analysis · 11 July 2026</div>
+      <h1>How Infini connects, and where KIE and Sinapso fit</h1>
+      <p class="lead">A code-grounded tour of the browser application, provider calls, local HTTP agent, MCP bridge, CLI package, persistence, external services, and the shortest safe path to KIE and cross-repository orchestration.</p>
+      <div class="meta">
+        <span class="pill"><i class="dot"></i> Codebase Memory ready</span>
+        <span class="pill">Infini graph: 2,731 nodes / 5,348 edges</span>
+        <span class="pill">Sinapso graph: 2,702 nodes / 6,618 edges</span>
+        <span class="pill">KIE graph: 735 nodes / 1,147 edges</span>
+        <span class="pill">Commit bc70acc6</span>
+        <span class="pill">Working-tree snapshot: 130 tracked changed files</span>
+      </div>
+    </header>
+
+    <section id="verdict">
+      <h2>The short answer</h2>
+      <p class="section-intro">Infini already has two useful seams. The channel system handles OpenAI-compatible and native Gemini inference. The Canvas Agent exposes browser-owned canvas operations through token-gated loopback HTTP and stdio MCP.</p>
+      <div class="verdict">
+        <div class="card callout">
+          <strong>Do not build a second KIE integration inside Infini.</strong>
+          The local <code>kie-cli-mcp</code> repository already owns KIE authentication, model schemas, task persistence, polling, CLI, stdio MCP, and remote Streamable HTTP MCP. For agent workflows, register KIE, Infini, and Sinapso as sibling MCP servers. Keep each product behind its existing boundary.
+        </div>
+        <div class="card card-pad">
+          <div class="eyebrow">Minimal target</div>
+          <h3 style="margin-top:10px">Three sibling MCPs, zero bridge code</h3>
+          <p style="margin:0;color:var(--muted);font-size:13px">Sinapso supplies knowledge, KIE generates media, and Infini receives the resulting URL as an asset or canvas node. Add a product adapter only if Infini’s own Generate button must call KIE without an agent host.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="architecture">
+      <h2>System at a glance</h2>
+      <p class="section-intro">Click a node for its responsibility. Solid lines are runtime calls. Dashed lines are optional or externally orchestrated paths.</p>
+      <div class="card map">
+        <svg viewBox="0 0 980 570" role="img" aria-label="Infini connectivity architecture">
+          <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" fill="currentColor"/></marker></defs>
+          <path class="edge" d="M210 120H345"/><path class="edge" d="M505 120H640"/>
+          <path class="edge" d="M210 275H345"/><path class="edge" d="M505 275H640"/>
+          <path class="edge" d="M425 150V245"/><path class="edge" d="M425 305V400"/>
+          <path class="edge dash" d="M720 305V400"/><path class="edge dash" d="M210 445H345"/>
+          <path class="edge dash" d="M800 120H875V430H800"/>
+
+          <g class="node" data-key="user"><rect class="box" x="30" y="85" width="180" height="70"/><text x="120" y="114" text-anchor="middle">Creator</text><text class="small" x="120" y="134" text-anchor="middle">browser interactions</text></g>
+          <g class="node" data-key="web"><rect class="box browser" x="345" y="75" width="160" height="90"/><text x="425" y="110" text-anchor="middle">Vite React SPA</text><text class="small" x="425" y="130" text-anchor="middle">state + canvas + UI</text><text class="small" x="425" y="146" text-anchor="middle">IndexedDB / localStorage</text></g>
+          <g class="node" data-key="providers"><rect class="box external" x="640" y="75" width="160" height="90"/><text x="720" y="104" text-anchor="middle">Inference APIs</text><text class="small" x="720" y="124" text-anchor="middle">OpenAI-compatible</text><text class="small" x="720" y="140" text-anchor="middle">Gemini · Ark Seedance</text></g>
+          <g class="node" data-key="clients"><rect class="box" x="30" y="240" width="180" height="70"/><text x="120" y="269" text-anchor="middle">Codex / Claude / MCP host</text><text class="small" x="120" y="289" text-anchor="middle">external orchestrator</text></g>
+          <g class="node" data-key="mcp"><rect class="box agent" x="345" y="240" width="160" height="70"/><text x="425" y="269" text-anchor="middle">canvas-agent mcp</text><text class="small" x="425" y="289" text-anchor="middle">stdio JSON-RPC proxy</text></g>
+          <g class="node" data-key="agent"><rect class="box agent" x="640" y="230" width="160" height="90"/><text x="720" y="260" text-anchor="middle">Canvas Agent HTTP</text><text class="small" x="720" y="280" text-anchor="middle">127.0.0.1:17371</text><text class="small" x="720" y="296" text-anchor="middle">token + origin gated</text></g>
+          <g class="node" data-key="browserbridge"><rect class="box browser" x="345" y="400" width="160" height="75"/><text x="425" y="430" text-anchor="middle">SSE browser bridge</text><text class="small" x="425" y="450" text-anchor="middle">tool_call ↔ result</text></g>
+          <g class="node" data-key="external"><rect class="box external" x="640" y="400" width="160" height="75"/><text x="720" y="426" text-anchor="middle">Other connections</text><text class="small" x="720" y="446" text-anchor="middle">WebDAV · GitHub raw</text><text class="small" x="720" y="462" text-anchor="middle">remote media URLs</text></g>
+          <g class="node" data-key="kie"><rect class="box risk" x="835" y="230" width="125" height="90"/><text x="897" y="260" text-anchor="middle">KIE CLI / MCP</text><text class="small" x="897" y="280" text-anchor="middle">shared tool core</text><text class="small" x="897" y="296" text-anchor="middle">server-side key</text></g>
+        </svg>
+        <div class="detail" id="map-detail"><strong>Vite React SPA</strong><p>The product runtime. It owns provider configuration, canvas state, generation calls, IndexedDB data, and the UI-side execution of agent tool requests.</p></div>
+      </div>
+    </section>
+
+    <section id="runtime">
+      <h2>Sequential runtime</h2>
+      <p class="section-intro">The dominant path begins and ends in the browser. The local agent coordinates tools but does not currently perform inference itself.</p>
+      <div class="sequence">
+        <div class="step"><div class="step-mark"><div class="step-num">01</div><div class="step-line"></div></div><div class="step-body"><h3>Boot and hydrate</h3><p>The SPA hydrates channel configuration from Zustand persistence and business data from localforage. Each channel carries its own Base URL, API key, API format, and model list.</p><div class="refs">web/src/stores/use-config-store.ts:8-46, 170-239 · AGENTS.md:108-117</div></div></div>
+        <div class="step"><div class="step-mark"><div class="step-num">02</div><div class="step-line"></div></div><div class="step-body"><h3>Select capability and channel</h3><p>A model value encodes <code>channelId::model</code>. The store resolves that selection into the correct Base URL, key, API format, and raw model name.</p><div class="refs">web/src/stores/use-config-store.ts:125-159, 265-322</div></div></div>
+        <div class="step"><div class="step-mark"><div class="step-num">03</div><div class="step-line"></div></div><div class="step-body"><h3>Shape the provider request</h3><p>Image and text support OpenAI-shaped routes or native Gemini. Audio uses <code>/v1/audio/speech</code>. Video creates an async OpenAI-shaped task or uses the special Ark Seedance task path.</p><div class="refs">web/src/services/api/image.ts:624-779 · audio.ts:20-44 · video.ts:40-70, 85-159</div></div></div>
+        <div class="step"><div class="step-mark"><div class="step-num">04</div><div class="step-line"></div></div><div class="step-body"><h3>Call the external endpoint directly</h3><p>The browser sends the configured bearer key to the selected provider. Text streams through SSE. Image usually returns inline data or URLs. Video polls until completion. This is Infini’s current browser-held-key trust model; each provider’s client-side key policy must still be checked. KIE explicitly forbids it.</p><div class="refs">web/src/services/api/image.ts:284-311, 439-468, 661-751 · video.ts:40-51</div></div></div>
+        <div class="step"><div class="step-mark"><div class="step-num">05</div><div class="step-line"></div></div><div class="step-body"><h3>Persist the result locally</h3><p>Generated media is converted into browser-managed assets. Canvas projects, materials, and generation history remain local by default.</p><div class="refs">AGENTS.md:108-117 · web/src/services/api/video.ts:73-82 · audio.ts:47-50</div></div></div>
+        <div class="step"><div class="step-mark"><div class="step-num">06</div><div class="step-line"></div></div><div class="step-body"><h3>Optional agent automation</h3><p>An MCP client starts <code>canvas-agent mcp</code>. The stdio server forwards tool calls to <code>POST /api/tools</code>. The HTTP agent emits a <code>tool_call</code> over SSE to the connected browser, which executes against browser state and posts the result back.</p><div class="refs">canvas-agent/src/index.ts:1-6 · mcp-server.ts:9-29 · http-server.ts:31-40 · canvas-session.ts:60-180</div></div></div>
+      </div>
+    </section>
+
+    <section id="interfaces">
+      <h2>Connectivity inventory</h2>
+      <p class="section-intro">There is no deployed application backend. Only the optional Canvas Agent exposes server routes, and it binds to loopback.</p>
+      <div class="card matrix">
+        <table>
+          <thead><tr><th>Surface</th><th>Direction</th><th>Transport</th><th>What it connects</th><th>Boundary</th></tr></thead>
+          <tbody>
+            <tr><td>Model channels</td><td>Outbound</td><td>HTTPS</td><td>OpenAI-compatible and native Gemini inference</td><td><span class="badge partial">Browser key</span></td></tr>
+            <tr><td>Ark Seedance</td><td>Outbound</td><td>HTTPS + polling</td><td>Multimodal video generation via <code>/contents/generations/tasks</code></td><td><span class="badge partial">Special case</span></td></tr>
+            <tr><td>Canvas Agent API</td><td>Inbound</td><td>Loopback HTTP</td><td>Health, config, state sync, tool calls, Codex and Claude turns</td><td><span class="badge yes">Token gated</span></td></tr>
+            <tr><td>Canvas Agent events</td><td>Bidirectional</td><td>SSE + HTTP result</td><td>Browser state and agent tool execution</td><td><span class="badge yes">Token gated</span></td></tr>
+            <tr><td>Canvas MCP</td><td>Inbound</td><td>stdio JSON-RPC</td><td>MCP hosts to Canvas Agent HTTP tools</td><td><span class="badge yes">No listener</span></td></tr>
+            <tr><td>Canvas Agent CLI</td><td>Local</td><td>Node executable</td><td><code>canvas-agent</code> starts HTTP; <code>canvas-agent mcp</code> starts stdio MCP</td><td><span class="badge yes">Published bin</span></td></tr>
+            <tr><td>KIE MCP</td><td>Inbound / outbound</td><td>stdio or Streamable HTTP</td><td>Agent tools to KIE image, video, audio, and utility operations</td><td><span class="badge yes">Filtered tools</span></td></tr>
+            <tr><td>KIE CLI</td><td>Local</td><td>Child process + JSON</td><td>Registry-derived media commands without an MCP client</td><td><span class="badge yes">Server-side key</span></td></tr>
+            <tr><td>Codex app-server</td><td>Child process</td><td>stdio JSON-RPC</td><td>Embedded Codex threads with Canvas MCP injected</td><td><span class="badge yes">Workspace scoped</span></td></tr>
+            <tr><td>Claude CLI</td><td>Child process</td><td>stream JSON</td><td>Claude turn with only <code>mcp__infinite-canvas__*</code> allowed</td><td><span class="badge partial">Requires MCP config</span></td></tr>
+            <tr><td>WebDAV</td><td>Bidirectional</td><td>GET / PUT / MKCOL / PROPFIND</td><td>Optional browser data sync</td><td><span class="badge partial">Browser credentials</span></td></tr>
+            <tr><td>Prompt sources</td><td>Outbound</td><td>GitHub raw HTTPS</td><td>Five third-party prompt repositories cached in IndexedDB</td><td><span class="badge yes">Read only</span></td></tr>
+            <tr><td>Release check</td><td>Outbound</td><td>GitHub raw HTTPS</td><td>Reads upstream VERSION and CHANGELOG.md</td><td><span class="badge yes">Read only</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="tabs" style="margin-top:22px" role="tablist">
+        <button class="tab active" data-tab="routes" type="button">HTTP routes</button>
+        <button class="tab" data-tab="tools" type="button">MCP tools</button>
+        <button class="tab" data-tab="limits" type="button">What is absent</button>
+      </div>
+      <div class="tab-panel active card card-pad" data-panel="routes">
+        <div class="code">PUBLIC
+GET  /health
+GET  /config
+
+TOKEN REQUIRED
+GET  /events
+POST /canvas/state
+POST /canvas/result
+POST /api/tools
+GET  /agent/codex/workspace
+GET  /agent/codex/threads
+POST /agent/codex/threads/new
+GET  /agent/codex/threads/:threadId
+POST /agent/codex/threads/:threadId/resume
+POST /agent/codex/threads/:threadId/delete
+POST /agent/codex/turn
+POST /agent/codex/interrupt
+POST /agent/claude/turn</div>
+      </div>
+      <div class="tab-panel card card-pad" data-panel="tools"><p style="margin-top:0">The MCP exports 33 tools across canvas state, node CRUD, generation flows, workbench generation, prompts, projects, and assets. Tool schemas are declared once in <code>canvas-agent/src/schemas.ts:9-156</code>.</p><p style="color:var(--muted)">Important: these tools operate Infini. They do not make Infini an arbitrary MCP client.</p></div>
+      <div class="tab-panel card card-pad" data-panel="limits"><p style="margin-top:0"><strong>Not present:</strong> a public cloud API, server database, authentication, cloud sync, generic provider plugin loader, arbitrary MCP-client runtime, webhook receiver, or Infini-specific generic CLI tool caller.</p><p style="color:var(--muted)">The static SPA and loopback-only agent are intentional product constraints, not missing infrastructure to recreate by default.</p></div>
+    </section>
+
+    <section id="kie">
+      <h2>KIE: reuse the system you already have</h2>
+      <p class="section-intro"><code>kie-cli-mcp</code> is already the modular KIE boundary. Its private core owns schemas, API payloads, SQLite task history, and polling; public CLI and MCP packages expose the same registry.</p>
+      <div class="status-grid">
+        <div class="card status-card"><div class="k">Shared core</div><div class="v">One tool registry</div><p>CLI and MCP derive commands, schemas, model routing, and errors from <code>TOOL_REGISTRY</code>.</p></div>
+        <div class="card status-card"><div class="k">Public surfaces</div><div class="v">CLI + MCP</div><p><code>kie-cli</code>, stdio MCP, and optionally bearer-authenticated Streamable HTTP MCP are implemented and published.</p></div>
+        <div class="card status-card"><div class="k">Task lifecycle</div><div class="v">SQLite + wait tool</div><p><code>wait_for_task</code> polls or uses callback rendezvous and returns final result URLs.</p></div>
+      </div>
+
+      <div class="card card-pad" style="margin-top:18px">
+        <h3>Recommended agent workflow: no repository changes</h3>
+        <div class="code">Agent host (Codex / Claude / OpenCode)
+  1. Sinapso MCP  → search notes and passages
+  2. KIE MCP      → nano_banana_image / bytedance_seedance_video
+  3. KIE MCP      → wait_for_task → result_urls[]
+  4. Infini MCP   → assets_add or canvas_create_node(result URL)
+
+KIE_AI_ENABLED_TOOLS=image-or-video-tool,wait_for_task
+KIE_AI_API_KEY stays in the KIE MCP process</div>
+        <p style="color:var(--muted);font-size:13px">This is the shortest path because each repository already exposes the needed MCP surface. Infini does not need to understand KIE task states, and KIE does not need to understand canvas state. Tool filtering keeps the KIE schema footprint small.</p>
+      </div>
+
+      <div class="card matrix" style="margin-top:16px">
+        <table>
+          <thead><tr><th>Need</th><th>Use</th><th>Decision</th></tr></thead>
+          <tbody>
+            <tr><td>Agent creates KIE media and places it on canvas</td><td>Sibling KIE + Infini MCP servers</td><td><span class="badge yes">Use now</span> No code changes</td></tr>
+            <tr><td>Shell script or non-MCP automation</td><td><code>kie-cli ... --json</code> + <code>wait_for_task</code></td><td><span class="badge yes">Already solved</span></td></tr>
+            <tr><td>Central KIE service for several agents</td><td>KIE Streamable HTTP MCP <code>/mcp</code></td><td><span class="badge yes">Already solved</span> Set a bearer token; allowed hosts are mandatory off loopback</td></tr>
+            <tr><td>Infini Generate button calls KIE directly</td><td>New OpenAI-compatible transport in <code>kie-cli-mcp</code></td><td><span class="badge partial">Build only if required</span></td></tr>
+            <tr><td>Infini imports <code>@felores/kie-ai-core</code></td><td>Cross-repository package dependency</td><td><span class="badge no">Reject</span> Core is private, Node-only, and SQLite-backed</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="risk-list" style="margin-top:16px">
+        <div class="risk-row"><strong>USE NOW</strong><div>Register <code>@felores/kie-ai-mcp-server</code> beside Infini MCP. Whitelist only the generation tools needed; utility tools remain available for task tracking.</div></div>
+        <div class="risk-row"><strong>DIRECT UI</strong><div>If KIE must appear as a normal Infini channel, add an OpenAI-compatible adapter package inside the KIE monorepo over its private core. Expose <code>/v1/models</code>, image generation/edit, and video task routes while keeping the real KIE key server-side.</div></div>
+        <div class="risk-row"><strong>HEALTH</strong><div>KIE tests pass: 53/53. The monorepo build and post-build typecheck pass. A pre-build typecheck initially produced <code>TS6310</code>, suggesting command-order dependence worth checking separately.</div></div>
+      </div>
+    </section>
+
+    <section id="sinapso">
+      <h2>Using Infini from Sinapso</h2>
+      <p class="section-intro">The local repository is named <code>sinapso</code>. It should remain the knowledge surface while the existing KIE MCP owns generation and Infini MCP owns canvas operations.</p>
+      <div class="plan-grid">
+        <div class="card plan recommended"><div class="rank">1 · Recommended</div><h3>Three sibling MCP servers</h3><p>Register Sinapso, KIE, and Infini in Codex, Claude, OpenCode, or another MCP host. The host moves only selected context and result URLs between them.</p><ul><li>No code changes</li><li>Lowest coupling</li><li>Secrets stay with owning process</li></ul></div>
+        <div class="card plan"><div class="rank">2 · Scriptable</div><h3>CLI pipeline</h3><p>Use <code>sinapso call</code> for knowledge, <code>kie-cli --json</code> plus <code>wait_for_task</code> for media, then Infini’s token-gated <code>/api/tools</code> endpoint.</p><ul><li>Good for deterministic scripts</li><li>No MCP client required</li><li>Requires local process and token handling</li></ul></div>
+        <div class="card plan"><div class="rank">3 · Only if product UI needs it</div><h3>One explicit bridge tool</h3><p>Add a small, allowlisted Sinapso registry entry that invokes one Infini operation, or the reverse. Do this only for a concrete user workflow that cannot rely on an external MCP host.</p><ul><li>Tighter coupling</li><li>Needs lifecycle and token config</li><li>Avoid generic MCP passthrough</li></ul></div>
+      </div>
+      <div class="card card-pad" style="margin-top:18px">
+        <h3>Example cross-repository sequence</h3>
+        <div class="sequence">
+          <div class="step"><div class="step-mark"><div class="step-num">1</div><div class="step-line"></div></div><div class="step-body"><p>Agent calls Sinapso <code>search_notes</code>, <code>search_passages</code>, or a registry-backed read tool.</p></div></div>
+          <div class="step"><div class="step-mark"><div class="step-num">2</div><div class="step-line"></div></div><div class="step-body"><p>Agent synthesizes only the selected notes or passages into prompts, references, or a visual plan.</p></div></div>
+          <div class="step"><div class="step-mark"><div class="step-num">3</div><div class="step-line"></div></div><div class="step-body"><p>Agent calls the selected KIE generation tool, then <code>wait_for_task</code>.</p></div></div>
+          <div class="step"><div class="step-mark"><div class="step-num">4</div><div class="step-line"></div></div><div class="step-body"><p>Agent receives <code>result_urls</code> without implementing KIE polling itself.</p></div></div>
+          <div class="step"><div class="step-mark"><div class="step-num">5</div><div class="step-line"></div></div><div class="step-body"><p>Agent calls Infini <code>assets_add</code> or <code>canvas_create_node</code>; the connected browser stores or renders the generated media.</p></div></div>
+        </div>
+        <div class="refs">Sinapso: server/mcp.ts:24-80 · KIE: packages/core/src/tools/wait_for_task.ts:47-252 · Infini: canvas-agent/src/mcp-server.ts:9-29, schemas.ts:95-120</div>
+      </div>
+    </section>
+
+    <section id="enhancements">
+      <h2>Enhancement order</h2>
+      <p class="section-intro">The order below closes real gaps without turning a local-first creative tool into an integration platform.</p>
+      <div class="card matrix">
+        <table>
+          <thead><tr><th>Order</th><th>Change</th><th>Why now</th><th>Verification</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Document the three-MCP setup</td><td>Sinapso, KIE, and Infini already expose the required tools.</td><td>One external agent reads a Sinapso passage, generates through KIE, waits, and inserts the result into Infini.</td></tr>
+            <tr><td>2</td><td>Whitelist KIE tools per workflow</td><td>The full media catalog consumes unnecessary model context.</td><td>Only selected image/video tools plus utility tools appear in MCP discovery.</td></tr>
+            <tr><td>3</td><td>Add KIE to Infini’s embedded Codex MCP config only if needed</td><td>External hosts already work; Infini’s internal Codex currently injects only <code>infinite-canvas</code>.</td><td>The embedded Codex thread can call KIE and then Infini without global MCP configuration.</td></tr>
+            <tr><td>4</td><td>Add an OpenAI-compatible KIE transport only for direct UI generation</td><td>Lets the existing Infini channel UI consume KIE while keeping KIE logic and secrets in its owning repository.</td><td><code>/v1/models</code>, image/edit, and video task contracts pass Infini request-shaping tests.</td></tr>
+            <tr><td>Maintenance</td><td>Make KIE typecheck build-independent</td><td>A clean pre-build typecheck initially produced <code>TS6310</code>; it passed after the workspace build.</td><td>Root typecheck exits zero from a clean checkout before any build artifacts exist.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="sources">
+      <h2>Evidence index</h2>
+      <p class="section-intro">Code is the implementation source of truth. KIE facts come from its current official documentation.</p>
+      <div class="sources">
+        <div class="card source"><code>AGENTS.md:88-153</code><span>Product, infrastructure, routes, persistence, architecture decisions</span></div>
+        <div class="card source"><code>web/src/stores/use-config-store.ts:8-396</code><span>Channel model, persistence, capability classification, URL shaping</span></div>
+        <div class="card source"><code>web/src/services/api/image.ts:280-787</code><span>OpenAI Responses, images, Gemini requests, model discovery</span></div>
+        <div class="card source"><code>web/src/hooks/use-version-check.ts:6-78</code><span>Upstream GitHub VERSION and changelog checks</span></div>
+        <div class="card source"><code>web/src/services/api/video.ts:40-359</code><span>OpenAI video tasks and Ark Seedance special path</span></div>
+        <div class="card source"><code>canvas-agent/src/http-server.ts:8-144</code><span>Loopback API, CORS, token guard, Codex and Claude routes</span></div>
+        <div class="card source"><code>canvas-agent/src/mcp-server.ts:9-29</code><span>stdio MCP to HTTP proxy</span></div>
+        <div class="card source"><code>canvas-agent/src/canvas-session.ts:22-180</code><span>SSE clients, canvas state, tool routing, pending results</span></div>
+        <div class="card source"><code>canvas-agent/src/agents.ts:28-205, 317-326</code><span>Codex app-server, Claude CLI, MCP injection</span></div>
+        <div class="card source"><code>sinapso/server/mcp.ts:1-84</code><span>Sinapso stdio MCP exposure</span></div>
+        <div class="card source"><code>sinapso/server/integrations/mcp-bridge.ts:1-175</code><span>Registry-to-HTTP bridge and scoped token refresh</span></div>
+        <div class="card source"><code>sinapso/bin/call.ts:1-68</code><span>Generic CLI invocation surface</span></div>
+        <div class="card source"><code>kie-cli-mcp/packages/core/src/tools/index.ts:34-73</code><span>Shared CLI/MCP tool registry</span></div>
+        <div class="card source"><code>kie-cli-mcp/packages/core/src/tools/wait_for_task.ts:47-252</code><span>Polling, progress, rendezvous, and final result URLs</span></div>
+        <div class="card source"><code>kie-cli-mcp/packages/cli/src/index.ts:50-152</code><span>Registry-derived CLI and machine-readable JSON output</span></div>
+        <div class="card source"><code>kie-cli-mcp/packages/mcp/src/index.ts:31-320</code><span>Tool filtering, MCP handlers, progress notifications</span></div>
+        <div class="card source"><code>kie-cli-mcp/packages/mcp/src/http-transport.ts:14-172</code><span>Streamable HTTP MCP with optional bearer auth and host protection</span></div>
+        <div class="card source"><code>https://docs.kie.ai/market/quickstart</code><span>Unified createTask and recordInfo API, key security</span></div>
+        <div class="card source"><code>https://docs.kie.ai/market/common/get-task-detail</code><span>Task states, backoff, timeout, response codes, expiring results</span></div>
+        <div class="card source"><code>https://docs.kie.ai/market/google/nanobanana2</code><span>Nano Banana 2 request contract</span></div>
+        <div class="card source"><code>https://docs.kie.ai/market/bytedance/seedance-2</code><span>Seedance 2 request contract and multimodal limits</span></div>
+      </div>
+    </section>
+
+    <footer>Generated from Infini commit <code>bc70acc6cea79ee278e0a3dff553ed704523c7ef</code> and KIE CLI/MCP commit <code>88e700b51ef5a24d8d45c2a50cb7f67a1fb4df1e</code>. Codebase Memory is ready for Infini, Sinapso, and KIE CLI/MCP. No credentials or secret values are included.</footer>
+  </main>
+</div>
+
+<script>
+  const details = {
+    user: ["Creator", "Starts from the browser UI: configure models, edit canvas projects, generate media, or connect the local agent."],
+    web: ["Vite React SPA", "Owns product state, browser persistence, provider requests, and execution of site-level and canvas tools."],
+    providers: ["Inference APIs", "OpenAI-compatible endpoints and native Gemini are general channel formats. Ark Seedance is a model-specific video branch."],
+    clients: ["Codex / Claude / MCP host", "An external host can call Infini tools. Codex is embedded through app-server; Claude is spawned as a CLI process."],
+    mcp: ["canvas-agent mcp", "A stdio MCP server. It validates tool input, then forwards calls to the token-gated local HTTP agent."],
+    agent: ["Canvas Agent HTTP", "A loopback-only coordinator for state sync, SSE events, tool calls, Codex threads, and Claude turns."],
+    browserbridge: ["SSE browser bridge", "The agent emits tool_call. The browser performs the operation against its local state and posts the result to /canvas/result."],
+    external: ["Other connections", "Optional WebDAV sync, read-only GitHub prompt sources, and remote media URLs used by generation workflows."],
+    kie: ["KIE CLI / MCP", "The existing kie-cli-mcp monorepo already wraps KIE model payloads, SQLite task history, polling, CLI, stdio MCP, and optionally bearer-authenticated Streamable HTTP MCP."]
+  };
+  const detail = document.getElementById("map-detail");
+  document.querySelectorAll(".map .node").forEach((node) => node.addEventListener("click", () => {
+    document.querySelectorAll(".map .node").forEach((item) => item.classList.remove("active"));
+    node.classList.add("active");
+    const [title, body] = details[node.dataset.key];
+    detail.innerHTML = `<strong>${title}</strong><p>${body}</p>`;
+  }));
+
+  document.querySelectorAll(".tab").forEach((tab) => tab.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach((item) => item.classList.toggle("active", item === tab));
+    document.querySelectorAll(".tab-panel").forEach((panel) => panel.classList.toggle("active", panel.dataset.panel === tab.dataset.tab));
+  }));
+
+  document.getElementById("theme").addEventListener("click", () => {
+    const dark = !document.documentElement.classList.contains("dark");
+    document.documentElement.classList.toggle("dark", dark);
+    localStorage.setItem("infini-connectivity-theme", dark ? "dark" : "light");
+  });
+
+  const links = [...document.querySelectorAll("nav a")];
+  const sections = links.map((link) => document.querySelector(link.getAttribute("href"))).filter(Boolean);
+  const observer = new IntersectionObserver((entries) => {
+    const current = entries.filter((entry) => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+    if (!current) return;
+    links.forEach((link) => link.classList.toggle("active", link.getAttribute("href") === `#${current.target.id}`));
+  }, { rootMargin: "-15% 0px -70%", threshold: [0, .25, .5] });
+  sections.forEach((section) => observer.observe(section));
+</script>
+</body>
+</html>

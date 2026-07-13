@@ -35,7 +35,7 @@ export function CanvasConfigNodePanel({ node, isRunning, inputSummary, onConfigC
     return (
         <div className="flex h-full w-full cursor-move flex-col px-3 pb-3 pt-7 text-sm" style={{ color: theme.node.text }} onWheel={(event) => event.stopPropagation()}>
             <div className="mb-2 flex items-center justify-between gap-3">
-                <div className="shrink-0 text-sm font-semibold">生成配置</div>
+                <div className="shrink-0 text-sm font-semibold">Generation Config</div>
                 <div className="cursor-default" onMouseDown={(event) => event.stopPropagation()}>
                     <Segmented
                         size="small"
@@ -48,7 +48,7 @@ export function CanvasConfigNodePanel({ node, isRunning, inputSummary, onConfigC
                                 label: (
                                     <span className="inline-flex items-center gap-1">
                                         <ImageIcon className="size-3.5" />
-                                        生图
+                                        image generation
                                     </span>
                                 ),
                             },
@@ -57,7 +57,7 @@ export function CanvasConfigNodePanel({ node, isRunning, inputSummary, onConfigC
                                 label: (
                                     <span className="inline-flex items-center gap-1">
                                         <MessageSquare className="size-3.5" />
-                                        文本
+                                        Text
                                     </span>
                                 ),
                             },
@@ -66,7 +66,7 @@ export function CanvasConfigNodePanel({ node, isRunning, inputSummary, onConfigC
                                 label: (
                                     <span className="inline-flex items-center gap-1">
                                         <Video className="size-3.5" />
-                                        视频
+                                        Video
                                     </span>
                                 ),
                             },
@@ -75,7 +75,7 @@ export function CanvasConfigNodePanel({ node, isRunning, inputSummary, onConfigC
                                 label: (
                                     <span className="inline-flex items-center gap-1">
                                         <Music2 className="size-3.5" />
-                                        音频
+                                        Audio
                                     </span>
                                 ),
                             },
@@ -85,13 +85,13 @@ export function CanvasConfigNodePanel({ node, isRunning, inputSummary, onConfigC
             </div>
 
             <div className="mb-2 flex flex-wrap gap-1.5">
-                <InputChip label="提示词" value={`${inputSummary.textCount} 个`} style={chipStyle} />
-                <InputChip label="参考图" value={`${inputSummary.imageCount} 张`} style={chipStyle} />
-                <InputChip label="参考视频" value={`${inputSummary.videoCount} 个`} style={chipStyle} />
-                <InputChip label="参考音频" value={`${inputSummary.audioCount} 个`} style={chipStyle} />
+                <InputChip label="Prompt" value={`${inputSummary.textCount} `} style={chipStyle} />
+                <InputChip label="Reference image" value={`${inputSummary.imageCount} images`} style={chipStyle} />
+                <InputChip label="Reference video" value={`${inputSummary.videoCount} `} style={chipStyle} />
+                <InputChip label="Reference audio" value={`${inputSummary.audioCount} `} style={chipStyle} />
                 <button type="button" className="inline-flex h-7 cursor-pointer items-center gap-1 rounded-md border px-2 text-[11px]" style={chipStyle} onMouseDown={(event) => event.stopPropagation()} onClick={onComposerToggle}>
                     <Settings2 className="size-3.5" />
-                    组装提示词
+                    Compose Prompt
                 </button>
             </div>
 
@@ -119,12 +119,12 @@ export function CanvasConfigNodePanel({ node, isRunning, inputSummary, onConfigC
                         <>
                             <LoaderCircle className="size-4 animate-spin" />
                             <Square className="size-3.5 fill-current" />
-                            <span>停止</span>
+                            <span>Stop</span>
                         </>
                     ) : (
                         <>
                             <Play className="size-4" />
-                            <span>开始生成</span>
+                            <span>Start generation</span>
                         </>
                     )}
                 </span>

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { filterFailures, type DiagnosticEntry } from "./e2e/diagnostics";
+import { filterFailures, redactDiagnosticText, type DiagnosticEntry } from "./e2e/diagnostics";
 
 const sample: DiagnosticEntry[] = [
     { type: "console.error", message: "err1", url: "/" },
@@ -28,4 +28,12 @@ describe("filterFailures", () => {
     it("handles empty input", () => {
         expect(filterFailures([])).toHaveLength(0);
     });
+});
+
+it("redacts credentials from diagnostics", () => {
+    const result = redactDiagnosticText("Authorization: Bearer secret-token api_key=sk-example123456 Token: local-secret");
+
+    expect(result).not.toContain("secret-token");
+    expect(result).not.toContain("sk-example123456");
+    expect(result).not.toContain("local-secret");
 });

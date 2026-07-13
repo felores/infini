@@ -6,7 +6,7 @@ export default defineConfig({
     reporter: "html",
     outputDir: "test-results",
     use: {
-        baseURL: "http://127.0.0.1:3000",
+        baseURL: "http://127.0.0.1:51309",
         trace: "retain-on-failure",
         screenshot: "only-on-failure",
     },
@@ -18,7 +18,7 @@ export default defineConfig({
     ],
     webServer: {
         command: "bun run dev",
-        url: "http://127.0.0.1:3000",
+        url: "http://127.0.0.1:51309",
         reuseExistingServer: true,
         timeout: 120_000,
     },

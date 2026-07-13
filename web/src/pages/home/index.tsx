@@ -31,7 +31,7 @@ export default function IndexPage() {
     useEffect(() => {
         void fetchPrompts({ pageSize: 12 })
             .then((data) => setPromptShowcase(data.items))
-            .catch((error) => message.error(error instanceof Error ? error.message : "获取提示词失败"));
+            .catch((error) => message.error(error instanceof Error ? error.message : "Failed to load prompts"));
     }, [message]);
 
     return (
@@ -41,24 +41,24 @@ export default function IndexPage() {
                 <div className="pointer-events-none absolute right-[23%] top-[48%] size-20 rounded-full border border-dashed border-stone-200 dark:border-stone-800" />
 
                 <div className="relative flex min-h-[620px] flex-col items-center justify-center pt-10 text-center">
-                    <h1 className="ai-title-aurora max-w-5xl text-balance text-5xl font-semibold tracking-normal sm:text-7xl lg:text-8xl">无限画布</h1>
+                    <h1 className="ai-title-aurora max-w-5xl text-balance text-5xl font-semibold tracking-normal sm:text-7xl lg:text-8xl">Infinite Canvas</h1>
                     <p className="mt-8 max-w-3xl text-balance text-lg leading-8 text-stone-500 dark:text-stone-400">
-                        在
+                        On an
                         <Highlighter action="underline" color="#FF9800">
-                            无限画布
+                            infinite canvas
                         </Highlighter>
-                        中生成、连接和重组
+                        , generate, connect, and remix
                         <Highlighter action="highlight" color="#87CEFA">
-                            图片、文字与图形
+                            images, text, and graphics
                         </Highlighter>
-                        ，让创作从单次生成变成连续推演。
+                        , turning one-shot generation into continuous exploration.
                     </p>
                     <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
                         <Button type="primary" size="large" onClick={() => navigate(`/${primaryTool.slug}`)} icon={<ArrowRight className="size-4" />} iconPlacement="end">
-                            开始使用
+                            Get Started
                         </Button>
                         <Button size="large" onClick={() => navigate("/canvas")}>
-                            打开画布
+                            Open Canvas
                         </Button>
                     </div>
                 </div>
@@ -67,11 +67,11 @@ export default function IndexPage() {
                     <div className="mb-8 grid gap-4 md:grid-cols-[1fr_auto_1fr] md:items-start">
                         <div />
                         <div className="max-w-2xl text-center">
-                            <h2 className="text-3xl font-semibold text-stone-950 dark:text-stone-100">沉淀每一次好结果</h2>
-                            <p className="mt-3 text-base leading-7 text-stone-500 dark:text-stone-400">收藏稳定出图的提示词、参考风格和结果图片，让下一次创作从已有经验开始。</p>
+                            <h2 className="text-3xl font-semibold text-stone-950 dark:text-stone-100">Capture every good result</h2>
+                            <p className="mt-3 text-base leading-7 text-stone-500 dark:text-stone-400">Bookmark reliable prompts, reference styles, and result images so your next creation starts from proven experience.</p>
                         </div>
                         <Button type="link" onClick={() => navigate("/prompts")} className="justify-self-center md:justify-self-end" icon={<ArrowRight className="size-4" />} iconPlacement="end">
-                            查看提示词库
+                            Browse Prompt Library
                         </Button>
                     </div>
                     <div className="grid auto-rows-[210px] gap-4 md:grid-cols-4">
@@ -89,7 +89,7 @@ export default function IndexPage() {
                                     index === 3 && "md:col-span-2",
                                 )}
                             >
-                                <img src={item.coverUrl} alt={item.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]" />
+                                <img src={item.coverUrl || undefined} alt={item.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]" />
                                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/35 to-transparent p-4 text-white">
                                     <div className="mb-2 flex flex-wrap gap-1.5">
                                         {item.tags.slice(0, 2).map((tag) => (
@@ -116,7 +116,7 @@ export default function IndexPage() {
             >
                 <div className="hidden">
                     {promptShowcase.map((item) => (
-                        <Image key={item.id} src={item.coverUrl} alt={item.title} />
+                        <Image key={item.id} src={item.coverUrl || undefined} alt={item.title} />
                     ))}
                 </div>
             </Image.PreviewGroup>

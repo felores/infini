@@ -1,4 +1,4 @@
-# 构建 Vite 前端产物。
+# Build Vite frontend assets.
 FROM oven/bun:1.3.13 AS web-build
 
 WORKDIR /app/web
@@ -9,7 +9,7 @@ COPY CHANGELOG.md /app/CHANGELOG.md
 COPY web ./
 RUN bun run build
 
-# 运行镜像：只启动静态前端，AI 请求由浏览器前台直连用户自己的接口。
+# Runtime image: serves static frontend only; AI requests go directly from the browser to the user's own API.
 FROM nginx:1.27-alpine
 
 COPY --from=web-build /app/web/dist /usr/share/nginx/html

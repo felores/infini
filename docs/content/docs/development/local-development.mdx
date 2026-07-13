@@ -1,13 +1,13 @@
 ---
-title: 本地开发
-description: 前端优先的本地开发方式
+title: Local Development
+description: Frontend-first local development approach
 ---
 
-# 本地开发
+# Local Development
 
-当前主应用以 `web/` 前端为主，AI 请求由浏览器前台直连用户自己的 OpenAI 兼容接口。
+The main app is primarily the `web/` frontend. AI requests are made directly from the browser to the user's own OpenAI-compatible endpoint.
 
-## 1. 启动前端
+## 1. Start the Frontend
 
 ```bash
 cd web
@@ -15,26 +15,26 @@ bun install
 bun run dev
 ```
 
-前端默认访问：
+The frontend defaults to:
 
 ```text
 http://localhost:3000
 ```
 
-## 2. 配置模型
+## 2. Configure Models
 
-打开右上角配置弹窗，填写自己的 `Base URL`、`API Key` 和模型名。第三方提示词和 WebDAV 都由浏览器前端直连。
+Open the config modal in the top-right corner and enter your `Base URL`, `API Key`, and model name. Third-party prompts and WebDAV are both connected directly from the browser frontend.
 
-## 3. 启动文档站
+## 3. Start the Docs Site
 
-如果需要单独调整文档站，在 `docs` 目录执行：
+If you need to adjust the docs site separately, run in the `docs` directory:
 
 ```bash
 bun run dev
 ```
 
-## 常见场景
+## Common Scenarios
 
-- 改画布、页面和交互：主要看 `web/`
-- 改提示词缓存：主要看 `web/src/services/api/prompts.ts`
-- 改文档站内容：主要看 `docs/content/docs/`
+- Modify canvas, pages, and interactions: mainly `web/`
+- Modify prompt caching: mainly `web/src/services/api/prompts.ts`
+- Modify docs site content: mainly `docs/content/docs/`

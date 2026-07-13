@@ -24,20 +24,20 @@ export function CanvasZoomControls({ scale, onScaleChange, onReset, isMiniMapOpe
     return (
         <div className="absolute bottom-5 left-5 z-50" onMouseDown={(event) => event.stopPropagation()} onPointerDown={(event) => event.stopPropagation()}>
             <div className="flex h-14 items-center gap-1 rounded-xl border px-2 shadow-lg backdrop-blur" style={dockStyle}>
-                <Tooltip title={isMiniMapOpen ? "关闭小地图" : "打开小地图"}>
+                <Tooltip title={isMiniMapOpen ? "Close minimap" : "Open minimap"}>
                     <Button
                         type="text"
                         className="!h-8 !w-8 !min-w-8 !p-0"
                         style={isMiniMapOpen ? activeStyle : { color: theme.toolbar.item }}
                         icon={<Compass className="size-4" />}
                         onClick={onToggleMiniMap}
-                        aria-label={isMiniMapOpen ? "关闭小地图" : "打开小地图"}
+                        aria-label={isMiniMapOpen ? "Close minimap" : "Open minimap"}
                     />
                 </Tooltip>
-                <Tooltip title="重置视图">
-                    <Button type="text" className="!h-8 !w-8 !min-w-8 !p-0" style={{ color: theme.toolbar.item }} icon={<Focus className="size-4" />} onClick={onReset} aria-label="重置视图" />
+                <Tooltip title="Reset view">
+                    <Button type="text" className="!h-8 !w-8 !min-w-8 !p-0" style={{ color: theme.toolbar.item }} icon={<Focus className="size-4" />} onClick={onReset} aria-label="Reset view" />
                 </Tooltip>
-                <Tooltip title="放大/缩小画布">
+                <Tooltip title="Zoom Canvas In/Out">
                     <input
                         type="range"
                         min="5"
@@ -47,24 +47,24 @@ export function CanvasZoomControls({ scale, onScaleChange, onReset, isMiniMapOpe
                         className="w-24"
                         style={{ accentColor: theme.node.activeStroke }}
                         onChange={(event) => onScaleChange(Number(event.target.value) / 100)}
-                        aria-label="放大/缩小画布"
+                        aria-label="Zoom Canvas In/Out"
                     />
                 </Tooltip>
                 <span className="w-10 text-right text-xs tabular-nums" style={{ color: theme.node.muted }}>
                     {Math.round(scale * 100)}%
                 </span>
-                <Tooltip title="快捷键">
-                    <Button type="text" className="!h-8 !w-8 !min-w-8 !p-0" style={shortcutsOpen ? activeStyle : { color: theme.toolbar.item }} icon={<HelpCircle className="size-4" />} onClick={() => setShortcutsOpen(true)} aria-label="快捷键" />
+                <Tooltip title="Shortcuts">
+                    <Button type="text" className="!h-8 !w-8 !min-w-8 !p-0" style={shortcutsOpen ? activeStyle : { color: theme.toolbar.item }} icon={<HelpCircle className="size-4" />} onClick={() => setShortcutsOpen(true)} aria-label="Shortcuts" />
                 </Tooltip>
             </div>
-            <Modal title="快捷键" open={shortcutsOpen} onCancel={() => setShortcutsOpen(false)} footer={null} centered>
+            <Modal title="Shortcuts" open={shortcutsOpen} onCancel={() => setShortcutsOpen(false)} footer={null} centered>
                 <div className="space-y-3 border-t pt-4 text-sm" style={{ borderColor: theme.node.stroke }}>
-                    <Shortcut label="拖动画布" value="平移视图" />
-                    <Shortcut label="滚轮" value="缩放画布" />
-                    <Shortcut label="Ctrl / Cmd + 拖动" value="框选多个节点" />
-                    <Shortcut label="Shift / Ctrl / Cmd + 点击" value="追加选择节点" />
-                    <Shortcut label="Ctrl / Cmd + C / V" value="复制 / 粘贴节点" />
-                    <Shortcut label="Delete / Backspace" value="删除选中" />
+                    <Shortcut label="Drag canvas" value="Pan view" />
+                    <Shortcut label="Scroll wheel" value="Zoom canvas" />
+                    <Shortcut label="Ctrl / Cmd + Drag" value="Box select multiple nodes" />
+                    <Shortcut label="Shift / Ctrl / Cmd + Click" value="Add to selection" />
+                    <Shortcut label="Ctrl / Cmd + C / V" value="Copy / Paste nodes" />
+                    <Shortcut label="Delete / Backspace" value="Delete Selected" />
                 </div>
             </Modal>
         </div>

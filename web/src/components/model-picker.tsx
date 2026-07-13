@@ -16,7 +16,7 @@ type ModelPickerProps = {
     onMissingConfig?: () => void;
 };
 
-export function ModelPicker({ config, value, onChange, capability, className, fullWidth = false, placeholder = "选择模型", onMissingConfig }: ModelPickerProps) {
+export function ModelPicker({ config, value, onChange, capability, className, fullWidth = false, placeholder = "Select model", onMissingConfig }: ModelPickerProps) {
     const pickerId = useId();
     const [open, setOpen] = useState(false);
     const options = useMemo(() => Array.from(new Set([...(config.channelMode === "local" && !capability ? [value] : []), ...selectableModelsByCapability(config, capability)].filter((model): model is string => Boolean(model)))), [capability, config, value]);
@@ -57,7 +57,7 @@ export function ModelPicker({ config, value, onChange, capability, className, fu
             </SelectTrigger>
             <SelectContent
                 data-canvas-no-zoom
-                className="z-[1200] w-80 max-w-[calc(100vw-24px)] rounded-xl border border-border/70 bg-popover p-1 shadow-xl"
+                className={cn("z-[1200] max-w-[calc(100vw-24px)] rounded-xl border border-border/70 bg-popover p-1 shadow-xl", capability === "image" ? "w-[295px]" : "w-80")}
                 position="popper"
                 align="start"
                 side="bottom"
@@ -82,9 +82,9 @@ export function ModelPicker({ config, value, onChange, capability, className, fu
 }
 
 function emptyModelLabel(config: AiConfig, capability?: ModelCapability) {
-    const label = capability === "image" ? "生图" : capability === "video" ? "视频" : capability === "text" ? "文本" : capability === "audio" ? "音频" : "";
-    if (capability && config.models.length) return "请先在上方配置可选模型";
-    return config.models.length ? `暂无匹配的${label}模型` : "请先到配置里添加渠道和模型";
+    const label = capability === "image" ? "image generation" : capability === "video" ? "Video" : capability === "text" ? "Text" : capability === "audio" ? "Audio" : "";
+    if (capability && config.models.length) return "Please configure selectable models above first";
+    return config.models.length ? `No matching ${label} model` : "Please add channels and models in Settings first";
 }
 
 function ModelLabel({ config, model }: { config: AiConfig; model: string }) {

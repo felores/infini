@@ -7,8 +7,8 @@ import { join } from 'node:path';
 import type { Metadata } from 'next';
 import { getMDXComponents } from '@/components/mdx';
 
-const title = '无限画布文档';
-const description = '功能说明、操作手册、部署方式、开发文档、商务合作与赞助支持';
+const title = 'Infinite Canvas Docs';
+const description = 'Features, user guide, deployment, development docs, business cooperation, and sponsorship';
 
 async function readDocsIndex() {
   return readFile(join(process.cwd(), 'index.md'), 'utf8');

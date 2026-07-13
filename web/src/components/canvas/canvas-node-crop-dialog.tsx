@@ -54,7 +54,7 @@ export function CanvasNodeCropDialog({ dataUrl, open, onClose, onConfirm }: { da
     };
 
     return (
-        <Modal title="裁剪图片" open={open && Boolean(dataUrl)} onCancel={onClose} footer={null} width={780} centered destroyOnHidden>
+        <Modal title="cropimage" open={open && Boolean(dataUrl)} onCancel={onClose} footer={null} width={780} centered destroyOnHidden>
             <div className="space-y-4">
                 <div className="flex justify-center">
                     <div ref={boxRef} className="relative inline-block max-w-full overflow-hidden rounded-lg bg-black select-none">
@@ -66,7 +66,7 @@ export function CanvasNodeCropDialog({ dataUrl, open, onClose, onConfirm }: { da
                             <div className="pointer-events-none absolute inset-y-0 left-1/3 border-l border-white/50" />
                             <div className="pointer-events-none absolute inset-y-0 left-2/3 border-l border-white/50" />
                             {handles.map((handle) => (
-                                <button key={handle} type="button" className="absolute size-3 rounded-full border border-black bg-white" style={handleStyle(handle)} onPointerDown={(event) => startDrag("resize", event, handle)} aria-label="调整裁剪框" />
+                                <button key={handle} type="button" className="absolute size-3 rounded-full border border-black bg-white" style={handleStyle(handle)} onPointerDown={(event) => startDrag("resize", event, handle)} aria-label="Adjust crop box" />
                             ))}
                         </div>
                     </div>
@@ -74,26 +74,26 @@ export function CanvasNodeCropDialog({ dataUrl, open, onClose, onConfirm }: { da
 
                 <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border px-3 py-2">
                     <div className="flex flex-wrap items-center gap-3 text-sm opacity-80">
-                        <span>裁剪尺寸 {cropSize ? `${cropSize.width} x ${cropSize.height}` : "未知"}</span>
-                        <span>比例 {cropSize ? formatRatio(cropSize.width, cropSize.height) : "未知"}</span>
+                        <span>cropSize {cropSize ? `${cropSize.width} x ${cropSize.height}` : "Unknown"}</span>
+                        <span>Ratio {cropSize ? formatRatio(cropSize.width, cropSize.height) : "Unknown"}</span>
                         {image ? (
                             <span>
-                                原图 {image.width} x {image.height}
+                                original image {image.width} x {image.height}
                             </span>
                         ) : null}
                     </div>
                     <Button icon={locked ? <Lock className="size-4" /> : <LockOpen className="size-4" />} onClick={() => setLocked((value) => !value)}>
-                        {locked ? "锁定比例" : "自由比例"}
+                        {locked ? "Lock ratio" : "Free ratio"}
                     </Button>
                 </div>
 
                 <div className="flex items-center justify-end gap-2">
-                    <Button onClick={() => setCrop(defaultCrop)}>重置</Button>
+                    <Button onClick={() => setCrop(defaultCrop)}>Reset</Button>
                     <Button icon={<X className="size-4" />} onClick={onClose}>
-                        取消
+                        Cancel
                     </Button>
                     <Button type="primary" icon={<Check className="size-4" />} onClick={() => onConfirm(crop)}>
-                        确认裁剪
+                        Confirmcrop
                     </Button>
                 </div>
             </div>

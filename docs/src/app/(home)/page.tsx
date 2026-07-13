@@ -11,19 +11,19 @@ const darkStarHistoryChart = `${starHistoryChart}&theme=dark`;
 const previewImages = [
   {
     src: 'https://i.ibb.co/TDFvGWDT/image.png',
-    title: '画布编排',
+    title: 'Canvas Orchestration',
   },
   {
     src: 'https://i.ibb.co/zVwJq3YS/image.png',
-    title: '图片生成',
+    title: 'Image Generation',
   },
   {
     src: 'https://i.ibb.co/PvY3qhhK/image.png',
-    title: '参考图编辑',
+    title: 'Reference Image Editing',
   },
   {
     src: 'https://i.ibb.co/7D04LwN/image.png',
-    title: '节点工作流',
+    title: 'Node Workflow',
   },
 ];
 
@@ -34,14 +34,14 @@ export default function HomePage() {
         <div>
           <div className="inline-flex items-center gap-2 text-xs font-medium text-zinc-500 dark:text-zinc-400">
             <Rocket className="size-3.5 text-emerald-600 dark:text-emerald-400" />
-            开源 AI 图片创作工作台
+            Open-source AI image creation workbench
           </div>
           <h1 className="mt-6 max-w-3xl text-4xl font-semibold leading-tight text-zinc-950 dark:text-zinc-50 md:text-6xl [font-family:var(--font-display)]">
             {appName}
-            <span className="block text-zinc-500 dark:text-zinc-400">文档中心</span>
+            <span className="block text-zinc-500 dark:text-zinc-400">Documentation</span>
           </h1>
           <p className="mt-6 max-w-2xl text-base leading-8 text-zinc-600 dark:text-zinc-400">
-            面向图片创作的无限画布，把画布编排、AI 生成、参考图编辑、提示词库和素材沉淀放在同一个工作流里。
+            An infinite canvas for image creation, bringing canvas orchestration, AI generation, reference image editing, prompt library, and asset accumulation into one workflow.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
@@ -49,7 +49,7 @@ export default function HomePage() {
               className="inline-flex items-center justify-center gap-2 rounded-full bg-zinc-950 px-5 py-3 text-sm font-medium text-white transition hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-zinc-200"
             >
               <BookOpen className="size-4" />
-              快速开始
+              Quick Start
             </Link>
             <a
               href={githubUrl}
@@ -66,7 +66,7 @@ export default function HomePage() {
               rel="noreferrer noopener"
               className="inline-flex items-center justify-center gap-2 rounded-full border border-zinc-300 px-5 py-3 text-sm font-medium text-zinc-900 transition hover:border-zinc-900 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-100 dark:hover:border-zinc-500 dark:hover:bg-zinc-900"
             >
-              在线体验
+              Live Demo
               <ArrowUpRight className="size-4" />
             </a>
           </div>
@@ -75,7 +75,7 @@ export default function HomePage() {
         <div className="overflow-hidden rounded-2xl lg:w-[108%] lg:max-w-none">
           <img
             src={previewImages[3].src}
-            alt="无限画布效果图"
+            alt="Infinite Canvas preview"
             className="aspect-[16/10] w-full rounded-xl object-cover"
           />
         </div>
@@ -85,14 +85,14 @@ export default function HomePage() {
         <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
           <div>
             <h2 className="text-2xl font-semibold text-zinc-950 dark:text-zinc-50 md:text-3xl">
-              效果展示
+              Preview
             </h2>
           </div>
           <Link
             href="/docs/overview/features"
             className="inline-flex w-fit items-center gap-1.5 text-sm font-medium text-zinc-800 transition hover:text-zinc-950 dark:text-zinc-200 dark:hover:text-white"
           >
-            功能介绍
+            Features
             <ArrowUpRight className="size-4" />
           </Link>
         </div>
@@ -101,7 +101,7 @@ export default function HomePage() {
             <img
               key={item.src}
               src={item.src}
-              alt={`${item.title}效果图`}
+              alt={`${item.title} preview`}
               loading="lazy"
               decoding="async"
               className="aspect-[16/10] w-full rounded-2xl object-cover"
@@ -112,10 +112,10 @@ export default function HomePage() {
 
       <section className="mx-auto mt-16 w-full max-w-4xl text-center">
         <h2 className="text-2xl font-semibold text-zinc-950 dark:text-zinc-50 md:text-3xl">
-          开发贡献者
+          Contributors
         </h2>
         <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-          感谢所有为本项目做出贡献的开发者
+          Thanks to all developers who contributed to this project
         </p>
         <div className="mt-7 flex justify-center">
           <a
@@ -126,7 +126,7 @@ export default function HomePage() {
           >
             <img
               src={`https://contrib.rocks/image?repo=${gitConfig.user}/${gitConfig.repo}`}
-              alt="开发贡献者头像"
+              alt="Contributor avatars"
               loading="lazy"
               decoding="async"
               className="max-w-full"

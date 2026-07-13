@@ -1,0 +1,11 @@
+{
+  "typescript-language-server": {
+    "command": "/Users/felo/Documents/GitHub/infini/web/node_modules/.bin/typescript-language-server",
+    "args": ["--stdio"],
+    "rootMarkers": [".git", "tsconfig.json", "package.json", "web/tsconfig.json", "canvas-agent/tsconfig.json", "docs/tsconfig.json"],
+    "fileTypes": [".ts", ".tsx", ".js", ".jsx"]
+  },
+  "tailwindcss": {
+    "rootMarkers": [".git", "tailwind.config.ts", "web/tailwind.config.ts"]
+  }
+}

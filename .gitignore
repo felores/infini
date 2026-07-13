@@ -15,5 +15,6 @@ playwright-report/
 .stitch/
 .harness/progress.md
 .harness/patterns.md
-.harness/dev.pid
+.harness/*.pid
+.harness/logs/
 .planning/phases/*/RESEARCH.md

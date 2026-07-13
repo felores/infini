@@ -59,7 +59,7 @@ export function AgentPanel() {
                 transition={{ duration: resizing ? 0 : PANEL_MOTION_SECONDS, ease: [0.22, 1, 0.36, 1] }}
                 style={{ width, background: theme.node.panel, borderColor: theme.node.stroke, color: theme.node.text }}
             >
-                <button type="button" className="absolute inset-y-0 left-0 z-40 w-4 -translate-x-1/2 cursor-col-resize" onPointerDown={startResize} aria-label="调整右侧面板宽度" />
+                <button type="button" className="absolute inset-y-0 left-0 z-40 w-4 -translate-x-1/2 cursor-col-resize" onPointerDown={startResize} aria-label="Adjust the right panel width" />
                 <header className="flex h-14 shrink-0 items-center justify-between border-b px-4" style={{ borderColor: theme.node.stroke }}>
                     <div className="flex min-w-0 items-center gap-2">
                         <span className="grid size-8 place-items-center rounded-lg">
@@ -67,15 +67,15 @@ export function AgentPanel() {
                         </span>
                         <div className="min-w-0">
                             <div className="text-base font-semibold leading-5">Agent</div>
-                            <div className="truncate text-xs" style={{ color: theme.node.muted }}>全站助手</div>
+                            <div className="truncate text-xs" style={{ color: theme.node.muted }}>Site Assistant</div>
                         </div>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
                         <label className="flex items-center gap-1.5 text-xs" style={{ color: theme.node.muted }}>
                             <Switch size="small" checked={confirmTools} onChange={(confirmTools) => setAgentState({ confirmTools })} />
-                            工具确认
+                            Tool Confirm
                         </label>
-                        <Tooltip title="收起对话">
+                        <Tooltip title="Collapse chat">
                             <Button type="text" shape="circle" className="!h-8 !w-8 !min-w-8" style={{ color: theme.node.muted }} icon={<PanelRightClose className="size-4" />} onClick={closePanel} />
                         </Tooltip>
                     </div>
