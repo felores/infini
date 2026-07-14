@@ -32,6 +32,7 @@ test("kieTransportInfo reports configured when KIE_AI_API_KEY is set, without le
 
 test("loadKieTransport returns null when unconfigured and a router when configured", () => {
     const prior = process.env.KIE_AI_API_KEY;
+    const priorDataDir = process.env.KIE_AI_DATA_DIR;
     delete process.env.KIE_AI_API_KEY;
     try {
         assert.equal(loadKieTransport(), null);
@@ -40,6 +41,7 @@ test("loadKieTransport returns null when unconfigured and a router when configur
     }
 
     process.env.KIE_AI_API_KEY = "test-key-do-not-send";
+    process.env.KIE_AI_DATA_DIR = `/tmp/kie-test-${Date.now()}`;
     try {
         const router = loadKieTransport();
         assert.ok(router, "router is instantiated when configured");
@@ -48,6 +50,8 @@ test("loadKieTransport returns null when unconfigured and a router when configur
     } finally {
         if (prior === undefined) delete process.env.KIE_AI_API_KEY;
         else process.env.KIE_AI_API_KEY = prior;
+        if (priorDataDir === undefined) delete process.env.KIE_AI_DATA_DIR;
+        else process.env.KIE_AI_DATA_DIR = priorDataDir;
     }
 });
 

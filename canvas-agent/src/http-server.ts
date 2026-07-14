@@ -15,9 +15,9 @@ export function startHttpServer() {
     const session = new CanvasSession();
     const emit = (type: string, payload: unknown) => session.emitAll(type, payload);
     const kie = kieTransportInfo();
+    const kieTransport = loadKieTransport();
     const app = express();
     app.disable("x-powered-by");
-    app.use(express.json({ limit: "30mb" }));
     app.use((req, res, next) => {
         const url = requestUrl(req, config);
         if (!setCors(req, res, url, config)) return void res.status(403).json({ ok: false, error: "origin not allowed" });
@@ -30,8 +30,8 @@ export function startHttpServer() {
         if (validToken(req, requestUrl(req, config), config.token)) return next();
         res.status(401).json({ ok: false, error: "invalid token" });
     });
-    const kieTransport = loadKieTransport();
-    if (kieTransport) app.use("/kie", kieTransport as unknown as express.RequestHandler);
+    app.use(express.json({ limit: "30mb" }));
+    if (kieTransport) app.use("/kie", (req, res, next) => kieTransport.proxy(req, res, next));
     app.get("/events", (req, res) => session.openEvents(requestUrl(req, config), res));
     app.post("/canvas/state", (req, res) => {
         session.updateState(req.body, String(req.query.clientId || "") || undefined);
@@ -136,7 +136,7 @@ function requestUrl(req: Request, config: CanvasAgentConfig) {
 function setCors(req: Request, res: Response, url: URL, config: CanvasAgentConfig) {
     const origin = req.headers.origin;
     res.setHeader("Access-Control-Allow-Origin", origin || "*");
-    res.setHeader("Access-Control-Allow-Headers", "content-type,x-canvas-agent-token");
+    res.setHeader("Access-Control-Allow-Headers", "content-type,x-canvas-agent-token,authorization");
     res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
     res.setHeader("Access-Control-Allow-Private-Network", "true");
     if (!origin || req.method === "OPTIONS" || url.pathname === "/health" || url.pathname === "/config") return true;
