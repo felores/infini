@@ -2,6 +2,7 @@
 
 ## Unreleased
 
++ [Added] Canvas Agent optionally mounts the KIE OpenAI transport at `/kie` behind its existing loopback bearer token when `KIE_AI_API_KEY` is set, with readiness exposed via `/health` and `/config` and `KIE_AI_*` / `KIE_MCP_*` stripped from Codex and Claude subprocess environments.
 + [Fixed] Prevent empty prompt covers and duplicate prompt tags from producing React rendering warnings.
 + [Fixed] Shape image API response fields by model family so GPT Image requests do not send unsupported `response_format`.
 + [Fixed] Encode multiple image-edit references with multipart `image[]` fields while preserving single-image compatibility.

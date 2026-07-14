@@ -3,6 +3,7 @@ import express, { type NextFunction, type Request, type Response } from "express
 import { DEFAULT_PORT, ensureSiteWorkspace, loadConfig, saveConfig, updateSiteWorkspace, type CanvasAgentConfig } from "./config.js";
 import { CanvasSession } from "./canvas-session.js";
 import { archiveCodexThread, interruptCodexTurn, listCodexThreads, readCodexThread, resumeCodexThread, runClaudeTurn, runCodexTurn, startCodexThread, summarizeCodexThread, verifyCodexThreadWorkspace, withAgentPrompt } from "./agents.js";
+import { kieTransportInfo, loadKieTransport } from "./kie-transport.js";
 import type { AgentAttachment } from "./types.js";
 
 export function startHttpServer() {
@@ -13,6 +14,7 @@ export function startHttpServer() {
 
     const session = new CanvasSession();
     const emit = (type: string, payload: unknown) => session.emitAll(type, payload);
+    const kie = kieTransportInfo();
     const app = express();
     app.disable("x-powered-by");
     app.use(express.json({ limit: "30mb" }));
@@ -22,12 +24,14 @@ export function startHttpServer() {
         if (req.method === "OPTIONS") return void res.json({});
         next();
     });
-    app.get("/health", (_req, res) => res.json(session.health()));
-    app.get("/config", (_req, res) => res.json({ ok: true, url: config.url, hasToken: true }));
+    app.get("/health", (_req, res) => res.json({ ...session.health(), kie }));
+    app.get("/config", (_req, res) => res.json({ ok: true, url: config.url, hasToken: true, kie }));
     app.use((req, res, next) => {
         if (validToken(req, requestUrl(req, config), config.token)) return next();
         res.status(401).json({ ok: false, error: "invalid token" });
     });
+    const kieTransport = loadKieTransport();
+    if (kieTransport) app.use("/kie", kieTransport as unknown as express.RequestHandler);
     app.get("/events", (req, res) => session.openEvents(requestUrl(req, config), res));
     app.post("/canvas/state", (req, res) => {
         session.updateState(req.body, String(req.query.clientId || "") || undefined);
@@ -99,14 +103,22 @@ export function startHttpServer() {
     app.use((_req, res) => res.status(404).json({ ok: false, error: "not found" }));
     app.use((error: Error, _req: Request, res: Response, _next: NextFunction) => res.status(500).json({ ok: false, error: error.message }));
 
-    app.listen(port, "127.0.0.1", () => {
+    const server = app.listen(port, "127.0.0.1", () => {
         console.log("Infinite Canvas Agent");
         console.log(`Local URL: ${config.url}`);
         console.log(`Connect token: ${config.token}`);
+        if (kie.configured) console.log(`KIE transport mounted at /kie (package ${kie.packageVersion}, contract ${kie.contractVersion})`);
+        else console.log("KIE transport not configured (set KIE_AI_API_KEY to enable)");
         console.log("Codex MCP is not installed by this command.");
         console.log("Optional published MCP add: codex mcp add infinite-canvas -- npx -y @basketikun/canvas-agent@0.1.0 mcp");
         console.log("Remove manually added MCP: codex mcp remove infinite-canvas");
     });
+    const shutdown = () => {
+        if (kieTransport) kieTransport.close();
+        server.close(() => process.exit(0));
+    };
+    process.on("SIGTERM", shutdown);
+    process.on("SIGINT", shutdown);
 }
 
 function route(handler: (req: Request, res: Response) => Promise<unknown>) {

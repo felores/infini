@@ -1,7 +1,7 @@
 {
   "project": "infini-kie-openai-transport",
   "created": "2026-07-14T00:07:59Z",
-  "updated": "2026-07-14T10:15:00Z",
+  "updated": "2026-07-14T16:46:00Z",
   "features": [
     {
       "id": "F001",
@@ -155,7 +155,7 @@
           "bun run --cwd canvas-agent test"
         ]
       },
-      "state": "not_started",
+      "state": "passing",
       "depends_on": [
         "F004"
       ],
@@ -163,9 +163,10 @@
         "canvas-agent/package.json",
         "canvas-agent/bun.lock",
         "canvas-agent/src/http-server.ts",
-        "canvas-agent/src/config.ts",
         "canvas-agent/src/kie-transport.ts",
-        "canvas-agent/test/kie-transport.test.ts"
+        "canvas-agent/src/agents.ts",
+        "canvas-agent/tests/kie-transport.test.ts",
+        "web/tests/api-request-shaping.test.ts"
       ],
       "estimated_lines": 390,
       "chained_pr": false,
@@ -173,11 +174,11 @@
       "confidence": "needs-review",
       "context_note": "Mount behind the existing Canvas Agent boundary; do not change Infini's native image.ts or video.ts contracts. KIE credentials remain server-only and optional at startup.",
       "spec_ref": "docs/plans/2026-07-11-001-feat-integrate-kie-openai-transport-plan.md#u5-pin-mount-expose-readiness-and-prove-credential-isolation",
-      "evidence": null,
-      "implemented_by": null,
-      "implemented_at": null,
-      "verified_by": null,
-      "verified_at": null
+      "evidence": "Pinned @felores/kie-ai-openai-server@0.1.1 (exact, no range) in canvas-agent/package.json and bun.lock. Mounted createKieOpenAiRouter at /kie after the existing token middleware. /health and /config expose kie: { configured, packageVersion, contractVersion } without secrets. SIGTERM/SIGINT close the KIE transport and the listener. Codex and Claude subprocesses spawn with sanitizedAgentEnv() that strips KIE_AI_* and KIE_MCP_*. Verification: canvas-agent build clean, web typecheck clean (after fixing pre-existing count:string test mismatch), canvas-agent test 5/5 pass (1 prior + 4 new). F004-defect patched in flight: published 0.1.0 leaked sqlite3 transitively; published 0.1.1 with core's TaskDatabase behind a ./database subpath and sideEffects:false so esbuild drops it from the openai bundle.",
+      "implemented_by": "OpenCode harness",
+      "implemented_at": "2026-07-14T16:45:00Z",
+      "verified_by": "OpenCode harness",
+      "verified_at": "2026-07-14T16:46:00Z"
     },
     {
       "id": "F006",

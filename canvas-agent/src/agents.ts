@@ -149,7 +149,7 @@ class CodexAppClient {
     private constructor(private child: ChildProcess, private emit: AgentEmit) {}
 
     static async start(emit: AgentEmit) {
-        const child = spawn(process.execPath, [codexBin(), "app-server", "--stdio"], { stdio: ["pipe", "pipe", "pipe"], windowsHide: true });
+        const child = spawn(process.execPath, [codexBin(), "app-server", "--stdio"], { stdio: ["pipe", "pipe", "pipe"], windowsHide: true, env: sanitizedAgentEnv() });
         const client = new CodexAppClient(child, emit);
         let stderr = "";
         child.stdout?.on("data", (chunk) => client.read(chunk.toString()));
@@ -521,7 +521,7 @@ function pipeJsonLines(child: ChildProcess, emit: AgentEmit, agent: string) {
 
 function spawnAgent(name: string, args: string[], stdio: StdioOptions, emit: AgentEmit) {
     try {
-        return crossSpawn(name, args, { stdio, windowsHide: true });
+        return crossSpawn(name, args, { stdio, windowsHide: true, env: sanitizedAgentEnv() });
     } catch (error) {
         emit("agent_error", { message: errorMessage(error) });
         return null;
@@ -537,4 +537,13 @@ export function redactAgentLog(text: string) {
         .replace(/(Bearer\s+)[A-Za-z0-9._~+/-]+=*/gi, "$1[REDACTED]")
         .replace(/\bsk-[A-Za-z0-9_-]{8,}\b/g, "[REDACTED]")
         .replace(/((?:api[_-]?key|token|authorization)\s*[:=]\s*)(?:"[^"]*"|'[^']*'|[^\s,;]+)/gi, "$1[REDACTED]");
+}
+
+export function sanitizedAgentEnv(): NodeJS.ProcessEnv {
+    const next: NodeJS.ProcessEnv = {};
+    for (const [key, value] of Object.entries(process.env)) {
+        if (key.startsWith("KIE_AI_") || key.startsWith("KIE_MCP_")) continue;
+        if (value !== undefined) next[key] = value;
+    }
+    return next;
 }

@@ -68,7 +68,7 @@ it("sends image edits as multipart to /images/edits with prompt, model, image, a
             imageModels: ["default::gpt-image-2"],
             baseUrl: "https://example.test",
             apiKey: "test-key",
-            count: 1,
+            count: "1",
             quality: "standard",
             size: "1024x1024",
         },
