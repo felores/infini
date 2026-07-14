@@ -3,7 +3,7 @@ import express, { type NextFunction, type Request, type Response } from "express
 import { DEFAULT_PORT, ensureSiteWorkspace, loadConfig, saveConfig, updateSiteWorkspace, type CanvasAgentConfig } from "./config.js";
 import { CanvasSession } from "./canvas-session.js";
 import { archiveCodexThread, interruptCodexTurn, listCodexThreads, readCodexThread, resumeCodexThread, runClaudeTurn, runCodexTurn, startCodexThread, summarizeCodexThread, verifyCodexThreadWorkspace, withAgentPrompt } from "./agents.js";
-import { kieTransportInfo, loadKieTransport } from "./kie-transport.js";
+import { kieTransportInfo, loadKieTransport, setKieApiKey } from "./kie-transport.js";
 import type { AgentAttachment } from "./types.js";
 
 export function startHttpServer() {
@@ -15,9 +15,10 @@ export function startHttpServer() {
     const session = new CanvasSession();
     const emit = (type: string, payload: unknown) => session.emitAll(type, payload);
     const kie = kieTransportInfo();
-    const kieTransport = loadKieTransport();
+    let kieTransport = loadKieTransport();
     const app = express();
     app.disable("x-powered-by");
+    app.use(express.json({ limit: "30mb" }));
     app.use((req, res, next) => {
         const url = requestUrl(req, config);
         if (!setCors(req, res, url, config)) return void res.status(403).json({ ok: false, error: "origin not allowed" });
@@ -30,8 +31,14 @@ export function startHttpServer() {
         if (validToken(req, requestUrl(req, config), config.token)) return next();
         res.status(401).json({ ok: false, error: "invalid token" });
     });
-    app.use(express.json({ limit: "30mb" }));
-    if (kieTransport) app.use("/kie", (req, res, next) => kieTransport.proxy(req, res, next));
+    app.post("/kie/config", (req, res) => {
+        const key = String(req.body?.apiKey || "").trim();
+        if (!key) return void res.status(400).json({ ok: false, error: "apiKey is required" });
+        kieTransport?.close();
+        kieTransport = setKieApiKey(key);
+        res.json({ ok: true, kie: kieTransportInfo() });
+    });
+    if (kieTransport) app.use("/kie", (req, res, next) => kieTransport?.proxy(req, res, next));
     app.get("/events", (req, res) => session.openEvents(requestUrl(req, config), res));
     app.post("/canvas/state", (req, res) => {
         session.updateState(req.body, String(req.query.clientId || "") || undefined);
@@ -152,5 +159,8 @@ function setCors(req: Request, res: Response, url: URL, config: CanvasAgentConfi
 function validToken(req: Request, url: URL, token: string) {
     const header = req.headers["x-canvas-agent-token"];
     if (header === token || (Array.isArray(header) && header.includes(token))) return true;
+    // KIE channels send the agent token as a Bearer token (OpenAI-shaped apiKey)
+    const auth = req.headers.authorization;
+    if (typeof auth === "string" && auth === `Bearer ${token}`) return true;
     return url.pathname === "/events" && url.searchParams.get("token") === token;
 }

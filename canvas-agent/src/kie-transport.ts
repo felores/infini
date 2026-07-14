@@ -1,6 +1,7 @@
 import http from "node:http";
 import { createRequire } from "node:module";
 import { CONTRACT_VERSION, PACKAGE_VERSION, createKieOpenAiRouter } from "@felores/kie-ai-openai-server";
+import { loadConfig, saveConfig } from "./config.js";
 
 const require4 = createRequire(import.meta.url);
 const kieEntryPath = require4.resolve("@felores/kie-ai-openai-server");
@@ -19,32 +20,25 @@ export type KieTransport = {
 };
 
 export function kieTransportInfo(): KieTransportInfo {
+    const config = loadConfig();
     return {
-        configured: Boolean(process.env.KIE_AI_API_KEY),
+        configured: Boolean(config.kieApiKey || process.env.KIE_AI_API_KEY),
         packageVersion: PACKAGE_VERSION,
         contractVersion: CONTRACT_VERSION,
     };
 }
 
 export function loadKieTransport(): KieTransport | null {
-    if (!process.env.KIE_AI_API_KEY) return null;
-    const router = createKieOpenAiRouter({
-        apiKey: process.env.KIE_AI_API_KEY,
-        baseUrl: process.env.KIE_AI_BASE_URL,
-        dataDir: process.env.KIE_AI_DATA_DIR,
-    });
-    // Express 4 router can't read Express 5's request stream (body-parser
-    // throws "stream is not readable"). Run it on a separate loopback port
-    // and proxy requests from the parent Express 5 app.
-    // ponytail: internal HTTP proxy; Express 5 req.body already parsed by
-    // parent express.json(), forwarded as a fresh string to avoid stream issues.
+    const config = loadConfig();
+    const apiKey = config.kieApiKey || process.env.KIE_AI_API_KEY;
+    if (!apiKey) return null;
+    const router = createKieOpenAiRouter({ apiKey, baseUrl: process.env.KIE_AI_BASE_URL, dataDir: process.env.KIE_AI_DATA_DIR });
     const app = express4();
     app.use(express4.json({ limit: "30mb" }));
     app.use(router as unknown as Parameters<typeof app.use>[0]);
     const server = app.listen(0, "127.0.0.1");
     const addr = server.address();
     const port = typeof addr === "object" && addr ? addr.port : 0;
-
     return {
         proxy: (req: unknown, res: unknown, _next: unknown) => {
             const r = req as { method?: string; path?: string; headers?: Record<string, string | string[]>; body?: unknown };
@@ -52,7 +46,6 @@ export function loadKieTransport(): KieTransport | null {
             const headers: Record<string, string> = {};
             if (r.headers) for (const [k, v] of Object.entries(r.headers)) if (typeof v === "string") headers[k] = v;
             if (body) { headers["content-type"] = "application/json"; headers["content-length"] = String(Buffer.byteLength(body)); }
-
             const proxyReq = http.request(
                 { hostname: "127.0.0.1", port, path: r.path || "/", method: r.method || "GET", headers },
                 (proxyRes) => {
@@ -71,4 +64,11 @@ export function loadKieTransport(): KieTransport | null {
         },
         close: () => { router.close(); server.close(); },
     };
+}
+
+export function setKieApiKey(key: string): KieTransport | null {
+    const config = loadConfig();
+    config.kieApiKey = key.trim() || undefined;
+    saveConfig(config);
+    return loadKieTransport();
 }

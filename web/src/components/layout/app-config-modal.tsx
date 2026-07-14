@@ -128,9 +128,37 @@ export function AppConfigPanel({ showDoneButton = false, initialTab = "channels"
             message.error("Connect the Canvas Agent first (it provides the URL and token for the local KIE channel)");
             return;
         }
+
+        // Check if KIE is already configured on the agent
+        let kieKey = "";
+        try {
+            const health = await fetch(`${agentUrl}/health`, { headers: { "x-canvas-agent-token": agentToken } });
+            const healthData = await health.json();
+            if (!healthData?.kie?.configured) {
+                // Prompt the user for their KIE API key
+                const input = window.prompt("Enter your KIE API key (from kie.ai):");
+                if (!input) return;
+                kieKey = input.trim();
+                // Send the key to the agent — it stores it server-side, never in browser
+                const resp = await fetch(`${agentUrl}/kie/config`, {
+                    method: "POST",
+                    headers: { "x-canvas-agent-token": agentToken, "Content-Type": "application/json" },
+                    body: JSON.stringify({ apiKey: kieKey }),
+                });
+                if (!resp.ok) {
+                    const err = await resp.json().catch(() => ({}));
+                    message.error(`Failed to configure KIE: ${err.error || resp.statusText}`);
+                    return;
+                }
+            }
+        } catch {
+            message.error("Cannot reach the Canvas Agent — is it running?");
+            return;
+        }
+
         const channel = createLocalKieChannel(agentUrl, agentToken);
         updateChannels([...config.channels, channel]);
-        message.success(`Local KIE channel added with ${channel.models.length} models`);
+        message.success("Local KIE channel added");
     };
 
     const deleteChannel = (id: string) => {
