@@ -9,7 +9,9 @@ describe("createLocalKieChannel", () => {
         expect(channel.baseUrl).toBe("http://127.0.0.1:51310/kie");
         expect(channel.apiKey).toBe("agent-token-abc");
         expect(channel.apiFormat).toBe("openai");
-        expect(channel.models).toEqual([]);
+        expect(channel.models.length).toBeGreaterThan(0);
+        expect(channel.models).toContain("kie-nano-banana-image");
+        expect(channel.models).toContain("kie-bytedance-video");
     });
 
     it("trims trailing slashes from the agent URL", () => {

@@ -130,16 +130,7 @@ export function AppConfigPanel({ showDoneButton = false, initialTab = "channels"
         }
         const channel = createLocalKieChannel(agentUrl, agentToken);
         updateChannels([...config.channels, channel]);
-        setLoadingChannelId(channel.id);
-        try {
-            const models = await fetchChannelModels(channel);
-            updateChannels(config.channels.concat(channel).map((item) => (item.id === channel.id ? { ...item, models } : item)));
-            message.success(`Local KIE channel added with ${models.length} models`);
-        } catch (error) {
-            message.warning(`Local KIE channel added; model fetch failed: ${error instanceof Error ? error.message : "unknown error"}`);
-        } finally {
-            setLoadingChannelId("");
-        }
+        message.success(`Local KIE channel added with ${channel.models.length} models`);
     };
 
     const deleteChannel = (id: string) => {
