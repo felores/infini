@@ -116,6 +116,17 @@ Infinite Canvas is an open-source workbench for image creation. It unifies infin
 
 Browser persistence only. Canvas projects, image/media blobs, prompt caches, and generation records are stored via localforage (IndexedDB). Small config values use `localStorage`. There is no server-side schema; local storage formats may change between versions without migration.
 
+## Development Servers
+
+Two servers run during local development:
+
+| Server | Command | Port | Bind | Purpose |
+|---|---|---|---|---|
+| **Vite** (web UI) | `bun run --cwd web dev` | **51309** | `0.0.0.0` (network) | Serves the React SPA. Accessible from other devices on the LAN or Tailscale. Point a browser at this. |
+| **Canvas Agent** (backend) | `bun run --cwd canvas-agent dev` | **51310** | `127.0.0.1` (localhost) | HTTP API + MCP server. Loopback-only by design — the browser on the SAME machine calls it. NOT accessible from other devices. |
+
+The web UI (Vite) is the only server a remote browser needs. Canvas Agent is an internal dependency, called by the browser on localhost — never directly by remote clients.
+
 ## API Routes
 
 The web app has no server routes. The optional local Canvas Agent (`canvas-agent/src/http-server.ts`) exposes loopback-only HTTP routes:

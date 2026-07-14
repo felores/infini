@@ -1,0 +1,220 @@
+{
+  "project": "infini-kie-openai-transport",
+  "created": "2026-07-14T00:07:59Z",
+  "updated": "2026-07-14T10:15:00Z",
+  "features": [
+    {
+      "id": "F001",
+      "priority": 1,
+      "category": "KIE Transport",
+      "behavior": "The KIE repository publishes an installable OpenAI-compatible transport package that starts a loopback-only server, requires bearer authentication, exposes readiness without secrets, loads KIE credentials only from the server environment, rejects client-supplied credentials and remote output URLs, and normalizes errors into OpenAI-shaped JSON.",
+      "verification": {
+        "command": "npm --prefix ../mcp/kie-ai-mcp-server test -w @felores/kie-ai-openai-server",
+        "expected": "Package tests pass for loopback binding, bearer auth, readiness, secret rejection, URL validation, and normalized errors.",
+        "acceptance_criteria": [
+          "npm --prefix ../mcp/kie-ai-mcp-server run build -w @felores/kie-ai-openai-server"
+        ]
+      },
+      "state": "passing",
+      "depends_on": [],
+      "files_touched": [
+        "../mcp/kie-ai-mcp-server/packages/openai-server/package.json",
+        "../mcp/kie-ai-mcp-server/packages/openai-server/src/server.ts",
+        "../mcp/kie-ai-mcp-server/packages/openai-server/src/auth.ts",
+        "../mcp/kie-ai-mcp-server/packages/openai-server/src/errors.ts",
+        "../mcp/kie-ai-mcp-server/packages/openai-server/src/validation.ts",
+        "../mcp/kie-ai-mcp-server/packages/openai-server/test/server.test.ts"
+      ],
+      "estimated_lines": 650,
+      "chained_pr": true,
+      "chain_strategy": "stacked-to-main",
+      "confidence": "needs-review",
+      "context_note": "Implement inside the KIE monorepo and reuse @felores/kie-ai-core. Security boundary: the browser must never supply or inherit KIE_API_KEY.",
+      "spec_ref": "docs/plans/2026-07-11-001-feat-integrate-kie-openai-transport-plan.md#u1-openai-compatible-package-and-secure-server-contract",
+      "evidence": "KIE commit c9f034a on feat/kie-openai-server-contract; package tests 13/13 passed; core and package typechecks passed; npm publish --dry-run passed; correctness, security, and package follow-up reviews found no remaining actionable issues.",
+      "implemented_by": "OMP",
+      "implemented_at": "2026-07-14T02:06:27Z",
+      "verified_by": "OMP harness",
+      "verified_at": "2026-07-14T02:30:14Z"
+    },
+    {
+      "id": "F002",
+      "priority": 2,
+      "category": "KIE Transport",
+      "behavior": "The KIE transport exposes synchronous POST /v1/images/generations and POST /v1/images/edits routes backed by the allowlisted Nano Banana and GPT Image 2 adapters, with exact ratio, resolution, count, MIME, and reference limits; server-side reference upload; deterministic mask and unsupported-field rejection before paid work; idempotent request correlation; polling and timeout handling; and OpenAI image data objects containing downloaded base64 results.",
+      "verification": {
+        "command": "npm --prefix ../mcp/kie-ai-mcp-server test -w @felores/kie-ai-openai-server",
+        "expected": "Image contract and journal tests pass for generation, reference edits, mask and unsupported-setting rejection, one upload per source, idempotent submission, polling, timeout, and OpenAI-shaped base64 responses.",
+        "acceptance_criteria": []
+      },
+      "state": "passing",
+      "depends_on": [
+        "F001"
+      ],
+      "files_touched": [
+        "../mcp/kie-ai-mcp-server/packages/openai/src/http-server.ts",
+        "../mcp/kie-ai-mcp-server/packages/openai/src/image-adapters.ts",
+        "../mcp/kie-ai-mcp-server/packages/openai/src/uploads.ts",
+        "../mcp/kie-ai-mcp-server/packages/openai/src/request-journal.ts",
+        "../mcp/kie-ai-mcp-server/packages/openai/tests/image-contract.test.ts",
+        "../mcp/kie-ai-mcp-server/packages/openai/tests/request-journal.test.ts"
+      ],
+      "estimated_lines": 620,
+      "chained_pr": true,
+      "chain_strategy": "stacked-to-main",
+      "confidence": "autonomous",
+      "context_note": "Follow the plan's Initial Model Matrix. KIE edits use uploaded image references only; reject multipart masks before journal reservation because neither selected KIE adapter honors OpenAI mask semantics.",
+      "spec_ref": "docs/plans/2026-07-11-001-feat-integrate-kie-openai-transport-plan.md#u2-kie-image-generation-and-editing-adapters",
+      "evidence": "Uncommitted KIE worktree on feat/kie-openai-server-contract; OpenAI transport tests 31/31 passed, core tests 56/56 passed, both package typechecks and git diff --check passed; Infini native OpenAI multipart mask regression test 6/6 passed; final security review found no remaining blockers.",
+      "implemented_by": "OpenCode",
+      "implemented_at": "2026-07-14T05:29:05Z",
+      "verified_by": "OpenCode harness with independent evaluator",
+      "verified_at": "2026-07-14T05:29:05Z"
+    },
+    {
+      "id": "F003",
+      "priority": 3,
+      "category": "KIE Transport",
+      "behavior": "The KIE transport exposes OpenAI-shaped video task creation and retrieval routes for Seedance 2, validates provider-specific fields before submission, uploads local image, video, and audio references before paid work begins, preserves multimodal references and native-audio controls, normalizes task states and terminal errors, and supports authenticated callback reconciliation without creating a second task.",
+      "verification": {
+        "command": "npm --prefix ../mcp/kie-ai-mcp-server test -w @felores/kie-ai-openai-server",
+        "expected": "Video task, provider validation, upload, polling, callback authentication, restart reconciliation, and no-duplicate-submission tests pass.",
+        "acceptance_criteria": []
+      },
+      "state": "passing",
+      "depends_on": [
+        "F001"
+      ],
+      "files_touched": [
+        "../mcp/kie-ai-mcp-server/packages/openai/src/video-adapters.ts",
+        "../mcp/kie-ai-mcp-server/packages/openai/src/result-download.ts",
+        "../mcp/kie-ai-mcp-server/packages/openai/src/http-server.ts",
+        "../mcp/kie-ai-mcp-server/packages/openai/src/request-journal.ts",
+        "../mcp/kie-ai-mcp-server/packages/openai/src/uploads.ts",
+        "../mcp/kie-ai-mcp-server/packages/openai/src/index.ts",
+        "../mcp/kie-ai-mcp-server/packages/openai/tests/video-contract.test.ts"
+      ],
+      "estimated_lines": 540,
+      "chained_pr": true,
+      "chain_strategy": "stacked-to-main",
+      "confidence": "needs-review",
+      "context_note": "Keep the create/read API asynchronous and distinguish local task ids from KIE provider ids. Callback auth and idempotent reconciliation are load-bearing.",
+      "spec_ref": "docs/plans/2026-07-11-001-feat-integrate-kie-openai-transport-plan.md#u3-seedance-task-routes-and-provider-normalization",
+      "evidence": "Uncommitted KIE worktree on feat/kie-openai-server-contract; OpenAI transport tests 48/48 passed (17 video + 31 image), core typecheck passed, package typecheck passed, git diff --check passed. Video routes cover creation, status polling, content streaming, callback reconciliation with token auth, multimodal reference uploads (image/video/audio), native-audio controls, frame control, restart recovery, and provider failure mapping.",
+      "implemented_by": "OpenCode",
+      "implemented_at": "2026-07-14T07:15:00Z",
+      "verified_by": "OpenCode harness",
+      "verified_at": "2026-07-14T07:15:00Z"
+    },
+    {
+      "id": "F004",
+      "priority": 4,
+      "category": "KIE Packaging",
+      "behavior": "The KIE repository exports the transport package, includes it in root build, test, typecheck, and bundle workflows, provides install and runtime documentation for loopback and container use, publishes a tested exact package version, and includes generated OpenAI transport documentation in the existing documentation workflow.",
+      "verification": {
+        "command": "npm --prefix ../mcp/kie-ai-mcp-server test && npm --prefix ../mcp/kie-ai-mcp-server run typecheck && npm --prefix ../mcp/kie-ai-mcp-server run build",
+        "expected": "The KIE monorepo test, typecheck, and build workflows pass with the transport package included.",
+        "acceptance_criteria": [
+          "npm --prefix ../mcp/kie-ai-mcp-server pack -w @felores/kie-ai-openai-server --dry-run"
+        ]
+      },
+      "state": "passing",
+      "depends_on": [
+        "F002",
+        "F003"
+      ],
+      "files_touched": [
+        "../mcp/kie-ai-mcp-server/package.json",
+        "../mcp/kie-ai-mcp-server/packages/mcp/package.json",
+        "../mcp/kie-ai-mcp-server/packages/cli/package.json",
+        "../mcp/kie-ai-mcp-server/.github/workflows/release.yml",
+        "../mcp/kie-ai-mcp-server/README.md",
+        "../mcp/kie-ai-mcp-server/docs/openai-transport.md"
+      ],
+      "estimated_lines": 260,
+      "chained_pr": false,
+      "chain_strategy": null,
+      "confidence": "autonomous",
+      "context_note": "Publish from the KIE monorepo only after U1-U3 contracts pass. Infini must consume the exact published version, never a workspace or git dependency.",
+      "spec_ref": "docs/plans/2026-07-11-001-feat-integrate-kie-openai-transport-plan.md#u4-package-export-publication-and-generated-docs",
+      "evidence": "Uncommitted KIE worktree on feat/kie-openai-server-contract; root test 104/104 passed (core 56 + openai 48), root typecheck 4/4 packages passed, root build 4/4 packages passed, npm pack dry-run 21 files self-contained with no source/tests/private deps. Fixed pre-existing MCP and CLI typecheck scripts (tsc -b --noEmit incompatible with composite project references; changed to tsc -p tsconfig.json --noEmit).",
+      "implemented_by": "OpenCode",
+      "implemented_at": "2026-07-14T10:15:00Z",
+      "verified_by": "OpenCode harness",
+      "verified_at": "2026-07-14T10:15:00Z"
+    },
+    {
+      "id": "F005",
+      "priority": 5,
+      "category": "Infini Integration",
+      "behavior": "Canvas Agent loads the exact published KIE transport package, mounts it behind existing loopback and bearer protection, exposes readiness through its established health/config surfaces without secrets, starts successfully without KIE provider credentials, and allows existing native image generation, alpha-mask Local Edit, and Seedance workflows to use the local KIE channel without exposing provider credentials to browser persistence, frontend state, logs, child agents, or exported bundles.",
+      "verification": {
+        "command": "bun run --cwd canvas-agent build && bun run --cwd web typecheck",
+        "expected": "Canvas Agent builds with the pinned transport and the web typecheck passes with existing native request shapes unchanged.",
+        "acceptance_criteria": [
+          "bun run --cwd canvas-agent test"
+        ]
+      },
+      "state": "not_started",
+      "depends_on": [
+        "F004"
+      ],
+      "files_touched": [
+        "canvas-agent/package.json",
+        "canvas-agent/bun.lock",
+        "canvas-agent/src/http-server.ts",
+        "canvas-agent/src/config.ts",
+        "canvas-agent/src/kie-transport.ts",
+        "canvas-agent/test/kie-transport.test.ts"
+      ],
+      "estimated_lines": 390,
+      "chained_pr": false,
+      "chain_strategy": null,
+      "confidence": "needs-review",
+      "context_note": "Mount behind the existing Canvas Agent boundary; do not change Infini's native image.ts or video.ts contracts. KIE credentials remain server-only and optional at startup.",
+      "spec_ref": "docs/plans/2026-07-11-001-feat-integrate-kie-openai-transport-plan.md#u5-pin-mount-expose-readiness-and-prove-credential-isolation",
+      "evidence": null,
+      "implemented_by": null,
+      "implemented_at": null,
+      "verified_by": null,
+      "verified_at": null
+    },
+    {
+      "id": "F006",
+      "priority": 6,
+      "category": "End-to-End Verification",
+      "behavior": "Infini has automated and manual release evidence proving GPT Image 2 text generation, native OpenAI alpha-mask editing, KIE-backed masked editing behavior, Seedance 2 text and multimodal generation, task resume after restart, browser-local asset persistence, unsupported-option rejection before paid submission, abort and timeout behavior, and absence of KIE secrets from browser persistence, bundle output, logs, child-agent environments, and unrelated repositories.",
+      "verification": {
+        "command": "bun run --cwd web test:run && bun run --cwd canvas-agent test",
+        "expected": "Focused web and Canvas Agent contract suites pass and cover every provider path and security invariant named in the plan.",
+        "acceptance_criteria": [
+          "bun run --cwd web typecheck",
+          "bun run --cwd canvas-agent build"
+        ]
+      },
+      "state": "not_started",
+      "depends_on": [
+        "F005"
+      ],
+      "files_touched": [
+        "web/tests/kie-image-generation.test.ts",
+        "web/tests/kie-video-generation.test.ts",
+        "canvas-agent/test/kie-transport.test.ts",
+        "CHANGELOG.md",
+        "docs/content/docs/progress/pending-test.mdx",
+        "docs/content/docs/progress/todo.mdx"
+      ],
+      "estimated_lines": 480,
+      "chained_pr": true,
+      "chain_strategy": null,
+      "confidence": "autonomous",
+      "context_note": "Use focused contract tests plus the plan's manual paid-generation checklist. Keep the changelog summary high-level and move implemented todo items to pending-test only after behavior works.",
+      "spec_ref": "docs/plans/2026-07-11-001-feat-integrate-kie-openai-transport-plan.md#u6-integration-abuse-recovery-and-release-verification",
+      "evidence": null,
+      "implemented_by": null,
+      "implemented_at": null,
+      "verified_by": null,
+      "verified_at": null
+    }
+  ]
+}

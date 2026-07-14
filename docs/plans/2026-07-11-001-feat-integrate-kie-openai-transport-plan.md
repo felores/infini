@@ -47,6 +47,7 @@ A direct KIE implementation inside Infini would duplicate the most volatile prov
 - R6. Model discovery returns only adapter models that Infini's existing image/video capability classification and request shapes can use faithfully.
 - R7. Completed image and video bytes enter Infini's existing browser-local persistence before the UI reports a durable result.
 - R8. Unsupported model settings or references fail before a paid KIE task is created whenever validation can determine the incompatibility locally.
+- R21. Local Edit remains enabled for native OpenAI channels and is visibly disabled for local KIE channels before the mask dialog or any transport request can start.
 - R19. A stable Infini request ID can claim at most one KIE submission; an ambiguous crash window blocks automatic resubmission instead of risking a duplicate paid task.
 
 #### Security and Runtime
@@ -85,11 +86,11 @@ A direct KIE implementation inside Infini would duplicate the most volatile prov
   - **Outcome:** Infini can discover KIE models through the existing loopback connection.
   - **Covered by:** R9-R16, R20.
 - F2. Native image generation or editing
-  - **Trigger:** A1 submits an image prompt, optionally with supported image references.
+  - **Trigger:** A1 submits an image prompt with optional references, or starts a masked Local Edit while a native OpenAI channel is selected.
   - **Actors:** A1, A2.
-  - **Steps:** Infini sends its existing OpenAI-shaped request, the KIE adapter validates and executes the matching KIE tool, waits for completion, downloads the outputs, and returns browser-safe image data.
-  - **Outcome:** Infini persists the generated images locally and retains its existing workbench/canvas behavior.
-  - **Covered by:** R1-R8, R19.
+  - **Steps:** Native OpenAI masked edits continue through the existing multipart mask path. KIE generation and reference editing use the KIE adapter, while KIE Local Edit is disabled before the dialog opens and masks remain rejected at the transport boundary.
+  - **Outcome:** Infini persists generated images locally, preserves native OpenAI Local Edit, and never creates a paid KIE task for an unsupported mask request.
+  - **Covered by:** R1-R8, R19, R21.
 - F3. Native video generation
   - **Trigger:** A1 submits a video prompt with supported settings and references.
   - **Actors:** A1, A2.
@@ -108,11 +109,13 @@ A direct KIE implementation inside Infini would duplicate the most volatile prov
 - AE1. Given Canvas Agent has no `KIE_AI_API_KEY`, when Infini checks KIE readiness, then the response reports KIE as unconfigured without returning environment details and existing non-KIE features remain available.
 - AE2. Given a configured local KIE runtime, when Infini refreshes the channel models, then it receives only supported image/video adapter IDs and classifies each into the correct capability.
 - AE3. Given a valid image prompt, when generation completes, then Infini receives image bytes or base64 data, saves them locally, and does not persist an expiring KIE URL as the sole copy.
-- AE4. Given supported image references, when the creator requests an edit, then the transport uploads the files server-side and rejects unsupported masks or limits before submitting a KIE task.
+- AE4. Given supported image references, when the creator requests a KIE edit, then the transport uploads the files server-side and rejects masks or unsupported limits before submitting a KIE task.
 - AE5. Given a video task is pending when the page reloads, when Infini resumes polling the saved transport task ID, then the same KIE task completes without a duplicate paid submission.
 - AE6. Given a request with a missing or wrong Canvas Agent token, when it targets any KIE route, then it is rejected before KIE receives a request.
 - AE7. Given Codex or Claude starts from a KIE-enabled Canvas Agent, when the child environment is inspected by a test double, then no KIE credential or KIE transport variable is present.
 - AE8. Given an Infini release declares a tested KIE package version, when the release checks run, then manifest, lockfile, packed package, and runtime readiness all report that exact version.
+- AE9. Given a native OpenAI image channel, when the creator selects Local Edit, then the mask dialog remains available and the generated alpha mask is sent through the existing multipart `mask` field.
+- AE10. Given a local KIE image channel, when the creator views the image tools, then Local Edit is visible but disabled with an unsupported explanation and cannot open the mask dialog or send a request.
 
 ### Success Criteria
 
@@ -121,12 +124,14 @@ A direct KIE implementation inside Infini would duplicate the most volatile prov
 - Generated outputs survive provider URL expiry because Infini stores the media locally.
 - The KIE transport is published independently, while each Infini release remains reproducible through an exact dependency pin.
 - Existing OpenAI-compatible and Gemini channels continue to work unchanged.
+- Native OpenAI channels retain Local Edit behavior, while local KIE channels cannot initiate unsupported mask edits.
 
 ### Confirmed Decisions
 
 - Native Infini Generate-button integration is required; sibling MCP servers alone do not satisfy the requested UI scope.
 - KIE package upgrades happen only through an Infini release change, never through runtime `latest` resolution.
 - The first native transport release covers image and video workbenches; KIE MCP remains the complete agent-facing catalog.
+- Mask capability follows explicit channel ownership: native OpenAI supports Local Edit, while the local KIE channel disables it and the KIE transport rejects masks defensively.
 
 ### Scope Boundaries
 
@@ -142,9 +147,9 @@ A direct KIE implementation inside Infini would duplicate the most volatile prov
 #### Deferred to Follow-Up Work
 
 - Audio, music, and speech routes for Infini's canvas audio mode.
-- Mask-based image editing until a selected KIE model can honor the mask contract.
-- Reference video/audio and provider-specific first/last-frame controls in the generic video workbench.
-- KIE task cancellation, cost dashboards, callbacks, cloud hosting, and cross-device task synchronization.
+- Mask-based image editing through KIE until a selected KIE model can honor the mask contract; native OpenAI Local Edit remains supported.
+- Provider-specific first/last-frame controls in the generic Infini video workbench UI (transport supports them; UI integration is F006).
+- KIE task cancellation, cost dashboards, cloud hosting, and cross-device task synchronization.
 - Automatic KIE upgrades outside an Infini release.
 - Embedded Codex/Claude KIE MCP registration; external hosts can already register sibling servers.
 
@@ -170,6 +175,7 @@ A direct KIE implementation inside Infini would duplicate the most volatile prov
 - KTD7. **Prefer safety over automatic retry in the provider-acceptance crash window.** Legal states are `reserved -> submitted -> succeeded|failed`; terminal states never transition. Validation runs before `reserved`. The provider task ID is written in the `submitted` transition immediately after acceptance. A retry of `reserved` returns `409 ambiguous_submission` and never resubmits; `submitted` resumes the provider task. The transport binary provides a recovery command that validates a discovered provider task ID and performs the otherwise-forbidden `reserved -> submitted` repair without creating a task.
 - KTD8. **Preserve MCP separation.** KIE MCP retains the complete agent-facing catalog and lifecycle utilities. Infini MCP retains canvas/assets. The HTTP adapter is only for native UI compatibility.
 - KTD9. **Pin per Infini release.** The exact KIE transport version is source-controlled in `canvas-agent/package.json` and `canvas-agent/bun.lock`; a release does not query npm for a newer compatible version at startup.
+- KTD10. **Gate Local Edit by explicit channel ownership.** Persist a stable provider identity for the local KIE channel instead of inferring it from model names or URLs. The image toolbar enables Local Edit only for native OpenAI channels, renders it disabled with an explanation for KIE, and keeps transport-side mask rejection as defense in depth.
 
 ### Initial Model Matrix
 
@@ -208,11 +214,17 @@ Unknown quality values, unsupported reduced ratios, invalid counts, and non-`b64
 | `size=1280x720` | KIE `aspect_ratio=16:9` |
 | `size=720x1280` | KIE `aspect_ratio=9:16` |
 | any other size | Reject with `unsupported_setting` |
-| `resolution_name=480p|720p` | Pass through; any other value is rejected |
+| `resolution_name=480p\|720p` | Pass through; any other value is rejected |
 | `preset=normal` | Accepted and omitted from KIE payload; any other value is rejected |
-| `input_reference[]` | Upload 0-7 images and map to `reference_image_urls` |
+| `input_reference[]` | Upload 0-9 images and map to `reference_image_urls` |
+| `reference_video[]` | Upload 0-3 videos and map to `reference_video_urls` |
+| `reference_audio[]` | Upload 0-3 audios and map to `reference_audio_urls` |
+| `first_frame` | Upload single image and map to `first_frame_url` |
+| `last_frame` | Upload single image and map to `last_frame_url` |
+| `generate_audio` | Boolean, default true; preserved in KIE payload |
+| `web_search` | Boolean, default false; preserved in KIE payload |
 
-Reference video/audio fields are rejected in the first release. The adapter sets no callback URL and uses polling.
+The adapter sets no callback URL by default and uses polling. When the transport's callback endpoint is configured, it registers an authenticated callback URL and reconciles completion without creating a second task.
 
 ### Error Contract
 
@@ -370,22 +382,25 @@ The repositories remain independently publishable. Paths below are relative to t
   7. Multiple provider outputs are downloaded and returned; failed/timeout states normalize without leaking upstream internals.
 - **Verification:** KIE image contract tests cover each exposed image model and both generation/edit routes.
 
-### U3. KIE video task, recovery, and content adapters
+### U3. KIE video task, recovery, callbacks, and content adapters
 
-- **Goal:** Implement Infini's asynchronous video contract with persistent task mapping and durable authenticated content delivery.
+- **Goal:** Implement Infini's asynchronous video contract with persistent task mapping, multimodal reference uploads, native-audio controls, authenticated callback reconciliation, and durable authenticated content delivery.
 - **Requirements:** R1-R8, R19.
 - **Files:**
   - KIE add: `packages/openai/src/video-adapters.ts`, `packages/openai/src/result-download.ts`, `packages/openai/tests/video-contract.test.ts`.
-  - KIE modify: `packages/openai/src/http-server.ts`, `packages/openai/src/request-journal.ts`, `packages/core/src/kie-ai-client.ts` only for transport-neutral task query helpers.
-- **Approach:** Implement video creation, status, and content routes; map the two exact video aliases in the Initial Model Matrix to KIE Seedance standard/fast adapters; persist adapter version and provider task metadata in the request journal; normalize states to Infini's existing pending/completed/failed handling; stream validated completed bytes through `/content`.
+  - KIE modify: `packages/openai/src/http-server.ts`, `packages/openai/src/request-journal.ts`, `packages/openai/src/uploads.ts` for video/audio MIME validation.
+- **Approach:** Implement video creation, status, content, and callback routes; map the two exact video aliases to KIE Seedance standard/fast adapters; upload image, video, and audio references server-side before paid work; preserve multimodal references, frame control, and native-audio controls; persist provider task ID and callback metadata in the request journal; normalize states to Infini's pending/completed/failed handling; support authenticated callback reconciliation that updates a submitted task without creating a second one; stream validated completed bytes through `/content`.
 - **Dependencies:** U1, U2 for the shared request journal.
 - **Test scenarios:**
   1. Video creation maps model, prompt, seconds, size, resolution, and supported image references correctly.
-  2. The returned task ID resumes after transport restart and never creates a replacement task during polling.
-  3. Waiting/generating/success/failure provider states map to stable OpenAI-shaped states.
-  4. `/content` refuses pending/failed tasks, rejects unsafe result hosts/redirects, and streams completed video bytes with the correct content type.
-  5. Multi-output or missing-output success responses produce an explicit normalized result rather than persisting an invalid URL.
-- **Verification:** KIE video contract tests pass against mocked provider transitions and a restarted task store.
+  2. Multipart references for image, video, and audio are uploaded server-side and mapped to the correct KIE fields.
+  3. Native-audio controls (`generate_audio`, `web_search`) and frame control (`first_frame`, `last_frame`) are preserved.
+  4. The returned task ID resumes after transport restart and never creates a replacement task during polling.
+  5. Waiting/generating/success/failure provider states map to stable OpenAI-shaped states.
+  6. `/content` refuses pending/failed tasks, rejects unsafe result hosts/redirects, and streams completed video bytes with the correct content type.
+  7. Authenticated callback reconciliation updates a submitted task to succeeded without creating a second provider task; an unauthenticated or duplicate callback is rejected or idempotent.
+  8. Multi-output or missing-output success responses produce an explicit normalized result rather than persisting an invalid URL.
+- **Verification:** KIE video contract tests pass against mocked provider transitions, callback reconciliation, and a restarted task store.
 
 ### U4. KIE package release and compatibility surface
 
@@ -427,13 +442,13 @@ The repositories remain independently publishable. Paths below are relative to t
 ### U6. Infini local KIE channel, recovery, and release checks
 
 - **Goal:** Make the mounted transport usable from native Generate pages without exposing the KIE key or regressing other channels.
-- **Requirements:** R4-R8, R10, R13-R20.
+- **Requirements:** R4-R8, R10, R13-R21.
 - **Files:**
-  - Infini modify: `web/src/stores/use-config-store.ts`, `web/src/stores/use-agent-store.ts`, `web/src/components/layout/app-config-modal.tsx`, `web/src/services/api/image.ts`, `web/src/services/api/video.ts`, `web/src/pages/image/index.tsx`, `web/src/pages/video/index.tsx`.
+  - Infini modify: `web/src/stores/use-config-store.ts`, `web/src/stores/use-agent-store.ts`, `web/src/components/layout/app-config-modal.tsx`, `web/src/components/canvas/canvas-image-toolbar-tools.tsx`, `web/src/services/api/image.ts`, `web/src/services/api/video.ts`, `web/src/pages/canvas/project.tsx`, `web/src/pages/image/index.tsx`, `web/src/pages/video/index.tsx`.
   - Infini tests: extend `web/tests/api-request-shaping.test.ts`, `web/tests/browser-diagnostics.test.ts`, and `web/tests/e2e/smoke.spec.ts`.
   - Infini add: `canvas-agent/kie-compatibility.json`, `scripts/check-kie-compatibility.mjs`, `web/tests/kie-channel.test.ts`.
   - Infini release/docs: `VERSION`, `CHANGELOG.md`, `SECURITY.md`, `docs/content/docs/progress/pending-test.mdx`, `docs/content/docs/progress/todo.mdx`, and relevant Canvas Agent setup documentation.
-- **Approach:** Offer a local KIE channel using the connected Agent URL plus `/kie` and the existing Agent token; fetch supported models; present the Error Contract states distinctly. For both media types, create and persist the generation log plus request ID before submission and send that ID as `Idempotency-Key`. After video creation, attach the returned transport task ID to the same `video_generation_logs` record; reload resumes that task. Save terminal media through existing image/media storage. Validate `VERSION`, exact package pin, lockfile resolution, runtime package version, and contract version against `canvas-agent/kie-compatibility.json` in pre-release CI.
+- **Approach:** Offer a local KIE channel using the connected Agent URL plus `/kie` and the existing Agent token; persist stable channel ownership metadata; fetch supported models; present the Error Contract states distinctly. Keep Local Edit enabled for native OpenAI channels, render it disabled with an unsupported explanation for KIE channels, and preserve server-side KIE mask rejection. For both media types, create and persist the generation log plus request ID before submission and send that ID as `Idempotency-Key`. After video creation, attach the returned transport task ID to the same `video_generation_logs` record; reload resumes that task. Save terminal media through existing image/media storage. Validate `VERSION`, exact package pin, lockfile resolution, runtime package version, and contract version against `canvas-agent/kie-compatibility.json` in pre-release CI.
 - **Dependencies:** U5.
 - **Test scenarios:**
   1. Connected/configured users can add or refresh the local KIE channel without entering `KIE_AI_API_KEY` in the browser.
@@ -446,6 +461,8 @@ The repositories remain independently publishable. Paths below are relative to t
   8. Browser diagnostics, localStorage, IndexedDB, request logs, and exports contain no KIE provider key.
   9. Pre-release compatibility checks fail on a version range, npm tag, root-version/manifest mismatch, lock mismatch, contract mismatch, or runtime version mismatch.
   10. The compatibility workflow uploads a checksum-paired tarball for the head SHA; mechanical publishing rejects any missing, mismatched, failed, or already-published artifact without rebuilding.
+  11. Native OpenAI channels keep Local Edit enabled and submit the generated alpha mask through the existing multipart request.
+  12. Local KIE channels show Local Edit disabled with an explanatory tooltip; direct dialog invocation and crafted mask requests still cannot create a KIE task.
 - **Verification:** Focused web unit tests, typecheck, and KIE E2E smoke coverage pass with browser diagnostics enabled.
 
 ---
@@ -466,7 +483,7 @@ The repositories remain independently publishable. Paths below are relative to t
 | Compatibility CI | `.github/workflows/canvas-agent-compatibility.yml` | The exact commit is installed, verified, tested, built, packed, checksummed, and made available to mechanical publishing. |
 | Web E2E | `bun run --cwd web test:e2e --grep KIE` | Native image/video flows work through loopback with release-blocking browser diagnostics. |
 
-Manual validation must use a low-cost KIE model and confirm image generation, multi-reference editing within supported limits, video reload recovery, local result persistence, and secret absence. All build/test/package evidence is produced before the mechanical Infini release workflow; the release workflow itself follows the repository rule and does not compile, test, or build unless the user explicitly requests it.
+Manual validation must use a low-cost KIE model and confirm image generation, multi-reference editing within supported limits, disabled KIE Local Edit, video reload recovery, local result persistence, and secret absence. It must also confirm that a native OpenAI channel still opens Local Edit and submits the generated alpha mask. All build/test/package evidence is produced before the mechanical Infini release workflow; the release workflow itself follows the repository rule and does not compile, test, or build unless the user explicitly requests it.
 
 ---
 
@@ -475,10 +492,11 @@ Manual validation must use a low-cost KIE model and confirm image generation, mu
 - U1-U4 are merged and the exact KIE transport package version is published with provenance.
 - U5 pins that exact version in both manifest and lockfile and passes a clean install/load check.
 - U6 proves native image and video flows against the pinned package without changing other provider behavior.
+- Native OpenAI Local Edit remains enabled and uses the existing multipart alpha-mask request; local KIE channels expose the action as disabled and cannot submit mask tasks.
 - Every requirement maps to at least one passing automated or manual acceptance scenario.
 - KIE provider credentials are absent from browser persistence, traffic, logs, exports, and child-agent environments.
 - Generated media is saved locally before being treated as durable.
 - Sinapso remains an architectural non-change; a read-only final diff/search confirms no KIE dependency, URL, key, MCP registration, or direct call was added there.
 - Infini's `CHANGELOG.md` has one `[Added]` Unreleased summary and concrete manual checks are recorded in `docs/content/docs/progress/pending-test.mdx`.
-- Unsupported audio, masks, and advanced multimodal video references remain documented in `docs/content/docs/progress/todo.mdx` rather than partially implemented.
+- Unsupported audio, KIE masks, and advanced multimodal video references remain documented in `docs/content/docs/progress/todo.mdx` rather than partially implemented.
 - Abandoned adapters, temporary compatibility branches, generated test artifacts, and dead experimental code are removed from both repository diffs.
