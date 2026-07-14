@@ -8,7 +8,7 @@ import { syncAppDataToWebdav, type AppSyncDomainKey, type AppSyncProgressEvent }
 import { testWebdavConnection, WEBDAV_MANIFEST_FILE_NAME } from "@/services/webdav-sync";
 import { audioFormatOptions, audioVoiceOptions, normalizeAudioSpeedValue } from "@/lib/audio-generation";
 import { useAgentStore } from "@/stores/use-agent-store";
-import { createModelChannel, defaultBaseUrlForApiFormat, filterModelsByCapability, modelOptionLabel, modelOptionsFromChannels, normalizeModelOptionValue, useConfigStore, type AiConfig, type ApiCallFormat, type ConfigTabKey, type ModelCapability, type ModelChannel } from "@/stores/use-config-store";
+import { createLocalKieChannel, createModelChannel, defaultBaseUrlForApiFormat, filterModelsByCapability, modelOptionLabel, modelOptionsFromChannels, normalizeModelOptionValue, useConfigStore, type AiConfig, type ApiCallFormat, type ConfigTabKey, type ModelCapability, type ModelChannel } from "@/stores/use-config-store";
 
 type ModelGroup = {
     capability: ModelCapability;
@@ -119,6 +119,27 @@ export function AppConfigPanel({ showDoneButton = false, initialTab = "channels"
 
     const addChannel = () => {
         updateChannels([...config.channels, createModelChannel({ name: `Channel ${config.channels.length + 1}` })]);
+    };
+
+    const addLocalKieChannel = async () => {
+        const agentUrl = useAgentStore.getState().url || localStorage.getItem("canvas-agent-url") || "";
+        const agentToken = useAgentStore.getState().token || localStorage.getItem("canvas-agent-token") || "";
+        if (!agentUrl || !agentToken) {
+            message.error("Connect the Canvas Agent first (it provides the URL and token for the local KIE channel)");
+            return;
+        }
+        const channel = createLocalKieChannel(agentUrl, agentToken);
+        updateChannels([...config.channels, channel]);
+        setLoadingChannelId(channel.id);
+        try {
+            const models = await fetchChannelModels(channel);
+            updateChannels(config.channels.concat(channel).map((item) => (item.id === channel.id ? { ...item, models } : item)));
+            message.success(`Local KIE channel added with ${models.length} models`);
+        } catch (error) {
+            message.warning(`Local KIE channel added; model fetch failed: ${error instanceof Error ? error.message : "unknown error"}`);
+        } finally {
+            setLoadingChannelId("");
+        }
     };
 
     const deleteChannel = (id: string) => {
@@ -258,6 +279,9 @@ export function AppConfigPanel({ showDoneButton = false, initialTab = "channels"
                                         </Button>
                                         <Button type="primary" icon={<Plus className="size-4" />} onClick={addChannel}>
                                             Add Channel
+                                        </Button>
+                                        <Button icon={<Wifi className="size-4" />} loading={loadingChannelId === "all"} onClick={() => void addLocalKieChannel()}>
+                                            Add Local KIE
                                         </Button>
                                     </div>
                                 </div>

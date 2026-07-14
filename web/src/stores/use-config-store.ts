@@ -12,6 +12,7 @@ export type ModelChannel = {
     apiKey: string;
     apiFormat: ApiCallFormat;
     models: string[];
+    source?: "user" | "local-kie";
 };
 
 export type AiConfig = {
@@ -259,7 +260,17 @@ export function createModelChannel(channel?: Partial<ModelChannel>): ModelChanne
         apiKey: channel?.apiKey || "",
         apiFormat,
         models: uniqueRawModels(channel?.models || []),
+        source: channel?.source,
     };
+}
+
+export function createLocalKieChannel(agentUrl: string, agentToken: string, models: string[] = []): ModelChannel {
+    const baseUrl = agentUrl.trim().replace(/\/+$/, "").concat("/kie");
+    return createModelChannel({ name: "Local KIE", baseUrl, apiKey: agentToken, apiFormat: "openai", models, source: "local-kie" });
+}
+
+export function isLocalKieChannel(channel: ModelChannel | undefined): boolean {
+    return channel?.source === "local-kie";
 }
 
 export function encodeChannelModel(channelId: string, model: string) {

@@ -28,6 +28,7 @@ export type ImageToolDefinition = {
     title: string | ((node: CanvasNodeData) => string);
     icon: (node: CanvasNodeData) => ReactNode;
     active?: (node: CanvasNodeData) => boolean;
+    disabled?: (node: CanvasNodeData) => string | null;
     run: (node: CanvasNodeData, handlers: ImageToolHandlers) => void;
 };
 
@@ -152,6 +153,7 @@ export function buildImageToolbarTools(node: CanvasNodeData, handlers: ImageTool
         title: resolveToolText(tool.title, node),
         icon: tool.icon(node),
         active: tool.active?.(node),
+        disabled: tool.disabled?.(node) ?? null,
         onClick: () => tool.run(node, handlers),
     }));
 }

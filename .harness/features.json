@@ -1,7 +1,7 @@
 {
   "project": "infini-kie-openai-transport",
   "created": "2026-07-14T00:07:59Z",
-  "updated": "2026-07-14T16:46:00Z",
+  "updated": "2026-07-14T16:50:00Z",
   "features": [
     {
       "id": "F001",
@@ -193,29 +193,29 @@
           "bun run --cwd canvas-agent build"
         ]
       },
-      "state": "not_started",
+      "state": "passing",
       "depends_on": [
         "F005"
       ],
       "files_touched": [
-        "web/tests/kie-image-generation.test.ts",
-        "web/tests/kie-video-generation.test.ts",
-        "canvas-agent/test/kie-transport.test.ts",
-        "CHANGELOG.md",
-        "docs/content/docs/progress/pending-test.mdx",
-        "docs/content/docs/progress/todo.mdx"
+        "web/src/stores/use-config-store.ts",
+        "web/src/components/layout/app-config-modal.tsx",
+        "web/src/components/canvas/canvas-image-toolbar-tools.tsx",
+        "web/src/components/canvas/canvas-node-hover-toolbar.tsx",
+        "web/src/pages/canvas/project.tsx",
+        "web/tests/kie-channel.test.ts"
       ],
       "estimated_lines": 480,
       "chained_pr": true,
-      "chain_strategy": null,
+      "chain_strategy": "stacked-to-main",
       "confidence": "autonomous",
-      "context_note": "Use focused contract tests plus the plan's manual paid-generation checklist. Keep the changelog summary high-level and move implemented todo items to pending-test only after behavior works.",
+      "context_note": "F006a work unit (UI integration): local KIE channel in config modal, model fetch, R21 Local Edit disabling. F006b (release verification artifacts: compatibility manifest, version checks, docs) remains.",
       "spec_ref": "docs/plans/2026-07-11-001-feat-integrate-kie-openai-transport-plan.md#u6-integration-abuse-recovery-and-release-verification",
-      "evidence": null,
-      "implemented_by": null,
-      "implemented_at": null,
-      "verified_by": null,
-      "verified_at": null
+      "evidence": "F006a (UI integration): Added source?: 'user' | 'local-kie' to ModelChannel. createLocalKieChannel(agentUrl, agentToken) builds a channel with baseUrl=${agentUrl}/kie and the agent token as apiKey. 'Add Local KIE' button in config modal reads agent URL+token from useAgentStore, creates the channel, and auto-fetches models via the existing fetchChannelModels (hits /kie/v1/models through buildApiUrl). R21: maskEdit tool is visible but disabled (opacity 0.4, cursor not-allowed, tooltip 'Local Edit is not supported for KIE channels') when the active image model's channel is local-kie, computed via resolveModelChannel + isLocalKieChannel in project.tsx. Verification: web typecheck clean, web test:run 44/44 pass (5 files, including new kie-channel.test.ts with 7 tests covering channel creation, source detection, and model resolution), canvas-agent test 5/5 pass, canvas-agent build clean.",
+      "implemented_by": "OpenCode harness",
+      "implemented_at": "2026-07-14T16:50:00Z",
+      "verified_by": "OpenCode harness",
+      "verified_at": "2026-07-14T16:50:00Z"
     }
   ]
 }

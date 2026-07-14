@@ -35,6 +35,7 @@ type CanvasNodeHoverToolbarProps = {
     onRetry: (node: CanvasNodeData) => void;
     onToggleFreeResize: (node: CanvasNodeData) => void;
     onDelete: (node: CanvasNodeData) => void;
+    maskEditDisabled?: string | null;
 };
 
 type ToolbarTool = {
@@ -45,6 +46,7 @@ type ToolbarTool = {
     onClick: () => void;
     active?: boolean;
     danger?: boolean;
+    disabled?: string | null;
 };
 
 export function CanvasNodeHoverToolbar({
@@ -72,6 +74,7 @@ export function CanvasNodeHoverToolbar({
     onRetry,
     onToggleFreeResize,
     onDelete,
+    maskEditDisabled,
 }: CanvasNodeHoverToolbarProps) {
     const theme = canvasThemes[useThemeStore((state) => state.theme)];
     const [quickImageToolIds, setQuickImageToolIds] = useState<ImageQuickToolId[]>(defaultImageQuickToolIds);
@@ -124,6 +127,10 @@ export function CanvasNodeHoverToolbar({
         copyText(prompt, "Prompt copied");
     };
     const imageTools = buildImageToolbarTools(node, { onUpload, onToggleFreeResize, onMaskEdit, onCrop, onSplit, onUpscale, onSuperResolve, onAngle, onViewImage, onCopyPrompt: copyImagePrompt, onReversePrompt });
+    if (maskEditDisabled) {
+        const maskTool = imageTools.find((tool) => tool.id === "maskEdit");
+        if (maskTool) maskTool.disabled = maskEditDisabled;
+    }
 
     function openImageToolSettings() {
         onKeep(activeNode.id);
@@ -149,7 +156,7 @@ export function CanvasNodeHoverToolbar({
         ...(isImage && !hasImage ? [{ id: "uploadImage", title: "Upload image", label: "Upload image", icon: <Upload className="size-4" />, onClick: () => onUpload(node) }] : []),
         ...(isVideo ? [{ id: "uploadVideo", title: hasVideo ? "Replace video" : "Upload video", label: hasVideo ? "Replace video" : "Upload video", icon: <Video className="size-4" />, onClick: () => onUpload(node) }] : []),
         ...(isAudio ? [{ id: "uploadAudio", title: hasAudio ? "Replace audio" : "Upload audio", label: hasAudio ? "Replace audio" : "Upload audio", icon: <Music2 className="size-4" />, onClick: () => onUpload(node) }] : []),
-        ...(hasImage ? imageTools.map((tool) => ({ id: tool.id, title: tool.title, label: tool.label, icon: tool.icon, active: tool.active, onClick: tool.onClick })) : []),
+        ...(hasImage ? imageTools.map((tool) => ({ id: tool.id, title: tool.title, label: tool.label, icon: tool.icon, active: tool.active, disabled: tool.disabled, onClick: tool.onClick })) : []),
     ];
     const toolbarTools = hasImage ? [...baseToolbarTools, ...nodeToolbarTools].filter((tool) => quickImageToolIdSet.has(tool.id as ImageQuickToolId)) : [...baseToolbarTools, ...nodeToolbarTools];
     const selectableImageToolbarTools = [...baseToolbarTools, ...nodeToolbarTools].filter((tool) => tool.id !== "retry") as ImageToolbarSettingsTool[];
@@ -279,13 +286,15 @@ export function CanvasNodeInfoModal({ node, open, onClose }: { node: CanvasNodeD
     );
 }
 
-function ToolbarAction({ title, label, icon, onClick, showLabel, active = false, danger = false }: ToolbarTool & { showLabel: boolean }) {
+function ToolbarAction({ title, label, icon, onClick, showLabel, active = false, danger = false, disabled = null }: ToolbarTool & { showLabel: boolean }) {
     const theme = canvasThemes[useThemeStore((state) => state.theme)];
     const hasText = showLabel && Boolean(label);
+    const tooltipTitle = disabled || title;
+    const handleClick = disabled ? undefined : onClick;
     return (
-        <Tooltip title={title} placement="top" mouseEnterDelay={0.2} color={theme.toolbar.panel} styles={{ root: { color: theme.toolbar.activeText, boxShadow: "0 8px 24px rgba(15,23,42,.16)", fontSize: 13, fontWeight: 500 } }}>
-            <button type="button" className="group relative flex h-12 items-center whitespace-nowrap px-1.5" style={{ color: danger ? "#ef4444" : theme.toolbar.item }} onClick={onClick} aria-label={title}>
-                <span className={`flex h-9 items-center ${hasText ? "gap-2 px-2.5" : "justify-center px-2"} rounded-lg transition`} style={{ background: active ? theme.toolbar.activeBg : undefined }} onMouseEnter={(event) => (event.currentTarget.style.background = theme.toolbar.itemHover)} onMouseLeave={(event) => (event.currentTarget.style.background = active ? theme.toolbar.activeBg : "transparent")}>
+        <Tooltip title={tooltipTitle} placement="top" mouseEnterDelay={0.2} color={theme.toolbar.panel} styles={{ root: { color: theme.toolbar.activeText, boxShadow: "0 8px 24px rgba(15,23,42,.16)", fontSize: 13, fontWeight: 500 } }}>
+            <button type="button" className="group relative flex h-12 items-center whitespace-nowrap px-1.5" style={{ color: danger ? "#ef4444" : theme.toolbar.item, opacity: disabled ? 0.4 : 1, cursor: disabled ? "not-allowed" : "pointer" }} onClick={handleClick} aria-label={tooltipTitle} aria-disabled={Boolean(disabled)}>
+                <span className={`flex h-9 items-center ${hasText ? "gap-2 px-2.5" : "justify-center px-2"} rounded-lg transition`} style={{ background: active ? theme.toolbar.activeBg : undefined }} onMouseEnter={(event) => !disabled && (event.currentTarget.style.background = theme.toolbar.itemHover)} onMouseLeave={(event) => (event.currentTarget.style.background = active ? theme.toolbar.activeBg : "transparent")}>
                     {icon}
                     {hasText ? <span>{label}</span> : null}
                 </span>
