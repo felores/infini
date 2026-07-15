@@ -518,7 +518,7 @@ export function AppConfigPanel({ showDoneButton = false, initialTab = "channels"
                                             <ShieldCheck className="size-4 text-stone-500" />
                                             <div>
                                                 <div className="text-sm font-medium">Confirm before executing canvas operations</div>
-                                                <div className="mt-0.5 text-xs text-stone-500">When enabled, Local Codex can execute canvas tool calls directly without manual confirmation.</div>
+                                                <div className="mt-0.5 text-xs text-stone-500">When enabled, canvas tool calls from the Local Agent require manual approval before executing. Turn off to let the agent execute directly.</div>
                                             </div>
                                         </div>
                                         <Switch checked={agentConfirmTools} onChange={(confirmTools) => setAgentState({ confirmTools })} />
