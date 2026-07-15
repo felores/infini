@@ -158,7 +158,7 @@ export function AppConfigPanel({ showDoneButton = false, initialTab = "channels"
 
         const channel = createLocalKieChannel(agentUrl, agentToken);
         updateChannels([...config.channels, channel]);
-        message.success("Local KIE channel added");
+        message.success("KIE channel added");
     };
 
     const deleteChannel = (id: string) => {
@@ -300,7 +300,7 @@ export function AppConfigPanel({ showDoneButton = false, initialTab = "channels"
                                             Add Channel
                                         </Button>
                                         <Button icon={<Wifi className="size-4" />} loading={loadingChannelId === "all"} onClick={() => void addLocalKieChannel()}>
-                                            Add Local KIE
+                                            Add KIE API Key
                                         </Button>
                                     </div>
                                 </div>

@@ -269,7 +269,7 @@ const KIE_VIDEO_MODELS = ["kie-bytedance-video", "kie-bytedance-fast-video"];
 
 export function createLocalKieChannel(agentUrl: string, agentToken: string, models: string[] = [...KIE_IMAGE_MODELS, ...KIE_VIDEO_MODELS]): ModelChannel {
     const baseUrl = agentUrl.trim().replace(/\/+$/, "").concat("/kie");
-    return createModelChannel({ name: "Local KIE", baseUrl, apiKey: agentToken, apiFormat: "openai", models, source: "local-kie" });
+    return createModelChannel({ name: "KIE", baseUrl, apiKey: agentToken, apiFormat: "openai", models, source: "local-kie" });
 }
 
 export function isLocalKieChannel(channel: ModelChannel | undefined): boolean {
